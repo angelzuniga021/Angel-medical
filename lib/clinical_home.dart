@@ -1,4 +1,5 @@
 import 'clinical_nom_settings.dart';
+import 'services.dart';
 
 import 'package:flutter/material.dart';
 
@@ -16,7 +17,7 @@ class ClinicalHome extends StatefulWidget {
 }
 
 class _ClinicalHomeState extends State<ClinicalHome> {
-  int patients = 0, notes = 0, admissions = 0, drafts = 0;
+  int patients = 0, notes = 0, admissions = 0, drafts = 0, catalogCount = 0;
   String? backup, error;
   List<Map<String, Object?>> appointments = [], pending = [];
   bool loading = true;
@@ -30,6 +31,7 @@ class _ClinicalHomeState extends State<ClinicalHome> {
     try {
       final db = await AppDb.instance.database;
       patients = await AppDb.instance.count('patients');
+      catalogCount = await AppDb.instance.count('cie10');
       notes = await AppDb.instance.count('consultations');
       drafts = await AppDb.instance.count('clinical_drafts');
       admissions =
@@ -178,6 +180,38 @@ class _ClinicalHomeState extends State<ClinicalHome> {
                 ],
               ),
             ),
+            clinicalPanel(context, 'Catálogo CIE-10', [
+              ListTile(
+                leading: Icon(
+                  catalogCount == 0
+                      ? Icons.info_outline
+                      : Icons.library_books_outlined,
+                ),
+                title: Text(
+                  catalogCount == 0
+                      ? 'Catálogo pendiente de incorporar'
+                      : '$catalogCount diagnósticos disponibles',
+                ),
+                subtitle: const Text(
+                  'Importa un catálogo verificado en XLSX con CATALOG_KEY, NOMBRE y LETRA opcional. No se generan códigos automáticamente.',
+                ),
+                trailing: const Icon(Icons.upload_file),
+                onTap: () async {
+                  try {
+                    final count = await CieImporter.importXlsx();
+                    if (mounted && count > 0)
+                      clinicalMessage(
+                        context,
+                        '$count diagnósticos importados.',
+                      );
+                    await load();
+                  } catch (e) {
+                    if (mounted)
+                      clinicalMessage(context, 'No se importó el catálogo: $e');
+                  }
+                },
+              ),
+            ]),
             clinicalPanel(context, 'Respaldo cifrado', [
               ListTile(
                 contentPadding: EdgeInsets.zero,

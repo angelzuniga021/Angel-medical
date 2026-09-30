@@ -1,3 +1,4 @@
+import 'clinical_catalog.dart';
 import 'clinical_guidance.dart';
 
 import 'dart:convert';
@@ -371,6 +372,9 @@ class MedicationImporter {
     );
     if (p == null) return 0;
 
+    if (p.files.single.size > 20 * 1024 * 1024) {
+      throw const FormatException('El catálogo supera 20 MB.');
+    }
     final bytes =
         p.files.single.bytes ?? await File(p.files.single.path!).readAsBytes();
     final excel = Excel.decodeBytes(bytes);
@@ -476,12 +480,7 @@ class MedicationImporter {
 }
 
 class CieImporter {
-  static String norm(String s) {
-    const from = 'ÁÉÍÓÚÜÑáéíóúüñ';
-    const to = 'AEIOUUNAEIOUUN';
-    for (var i = 0; i < from.length; i++) s = s.replaceAll(from[i], to[i]);
-    return s.toUpperCase().replaceAll(RegExp(r'\\s+'), ' ').trim();
-  }
+  static String norm(String s) => normalizeCatalogText(s);
 
   static Future<int> importXlsx() async {
     final p = await FilePicker.platform.pickFiles(
@@ -507,29 +506,30 @@ class CieImporter {
         li = headers['LETRA'];
     if (ci == null || ni == null)
       throw Exception('El XLSX requiere columnas CATALOG_KEY y NOMBRE.');
+    final entries = validateCatalogRows(
+      sheet.rows.skip(1).map((row) {
+        String val(int? i) => i == null || i >= row.length
+            ? ''
+            : (row[i]?.value?.toString() ?? '');
+        return [val(ci), val(ni), val(li)];
+      }),
+    );
     final db = await AppDb.instance.database;
-    var n = 0;
-    final batch = db.batch();
-    for (final row in sheet.rows.skip(1)) {
-      String val(int? i) => i == null || i >= row.length
-          ? ''
-          : (row[i]?.value?.toString().trim() ?? '');
-      final code = val(ci).toUpperCase(),
-          name = val(ni),
-          chapter = val(li).toUpperCase();
-      if (code.isEmpty || name.isEmpty) continue;
-      batch.insert('cie10', {
-        'code': code,
-        'name': name,
-        'chapter': chapter,
-        'search_text': norm('$code $name'),
-        'favorite': 0,
-      }, conflictAlgorithm: ConflictAlgorithm.replace);
-      n++;
-    }
-    await batch.commit(noResult: true);
-    await AppDb.instance.audit('IMPORT_CIE10', '$n diagnosticos');
-    return n;
+    await db.transaction((tx) async {
+      final batch = tx.batch();
+      for (final entry in entries) {
+        batch.rawInsert(
+          'INSERT INTO cie10(code,name,chapter,search_text) VALUES(?,?,?,?) ON CONFLICT(code) DO UPDATE SET name=excluded.name,chapter=excluded.chapter,search_text=excluded.search_text',
+          [entry.code, entry.name, entry.chapter, entry.searchText],
+        );
+      }
+      await batch.commit(noResult: true);
+    });
+    await AppDb.instance.audit(
+      'IMPORT_CIE10',
+      '${entries.length} diagnósticos',
+    );
+    return entries.length;
   }
 }
 

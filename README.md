@@ -1,3 +1,7 @@
+# Angel Medical 2.4 — candidata para médicos
+
+Consulta [EDICION_PARA_MEDICOS.md](EDICION_PARA_MEDICOS.md) para instalar la firma y compilar la nueva edición para todos. La versión estable de distribución aún requiere la configuración privada de firma y verificación funcional de respaldo y actualización.
+
 # Angel Medical 2.3 — beta para GitHub
 
 Proyecto Flutter para una beta privada. Aún no se ha compilado ni probado en Android esta versión. No es una certificación de cumplimiento NOM.
