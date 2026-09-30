@@ -8,16 +8,16 @@ on:
         description: Pruebas aisladas o APK con firma estable
         type: choice
         options: [pruebas, comunidad, personal]
-        default: pruebas
+        default: comunidad
 permissions:
   contents: read
 jobs:
   apk:
     runs-on: ubuntu-24.04
-    environment: ${{ inputs.modo || 'pruebas' }}
+    environment: ${{ inputs.modo || 'comunidad' }}
     timeout-minutes: 45
     env:
-      ANGEL_MODE: ${{ inputs.modo || 'pruebas' }}
+      ANGEL_MODE: ${{ inputs.modo || 'comunidad' }}
       ANGEL_SIGNING_JSON: ${{ secrets.ANGEL_SIGNING_JSON }}
       ANGEL_KEYSTORE_B64: ${{ secrets.ANGEL_KEYSTORE_B64 }}
       ANGEL_STORE_PASSWORD: ${{ secrets.ANGEL_STORE_PASSWORD }}
@@ -56,6 +56,6 @@ jobs:
           sha256sum *.apk > SHA256SUMS.txt
       - uses: actions/upload-artifact@v7
         with:
-          name: Angel-Medical-${{ inputs.modo || 'pruebas' }}-${{ github.run_number }}
+          name: Angel-Medical-${{ inputs.modo || 'comunidad' }}-${{ github.run_number }}
           path: entrega/
           retention-days: 14
