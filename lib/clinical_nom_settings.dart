@@ -161,15 +161,19 @@ class _NomSettingsState extends State<NomSettings> {
       if (logoBase64 != null) 'logo_base64': logoBase64!,
       if (certificate != null) 'certificate_import': certificate!,
     };
-    final missing = [
-      'doctor',
-      'license',
-      'profession',
-      'establishment',
-      'establishment_type',
-      'address',
-      'place',
-    ].where((k) => data[k]!.isEmpty).map((k) => nomProfileLabels[k]).join(', ');
+    final missing =
+        [
+              'doctor',
+              'license',
+              'profession',
+              'establishment',
+              'establishment_type',
+              'address',
+              'place',
+            ]
+            .where((k) => '${data[k] ?? ''}'.trim().isEmpty)
+            .map((k) => nomProfileLabels[k])
+            .join(', ');
     if (missing.isNotEmpty) {
       clinicalMessage(context, 'Completa: $missing');
       return;
