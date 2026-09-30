@@ -84,7 +84,8 @@ class ClinicalStore {
           ? <String, dynamic>{}
           : decodeNom(settings.single['setting_value']);
       final profile = {
-        for (final e in rawProfile.entries) e.key: '${e.value ?? ''}',
+        for (final e in rawProfile.entries)
+          if (e.key != 'certificate_import') e.key: '${e.value ?? ''}',
       };
       final issues = nomMissing(
         table: table,

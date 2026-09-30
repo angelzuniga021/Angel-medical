@@ -1,3 +1,7 @@
+import 'clinical_certificate.dart';
+
+import 'package:crypto/crypto.dart' show sha256;
+
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -24,6 +28,7 @@ class _NomSettingsState extends State<NomSettings> {
     for (final k in nomProfileLabels.keys) k: TextEditingController(),
   };
   String? logoBase64;
+  Map<String, dynamic>? certificate;
   bool ready = false, busy = false;
   String? error;
   @override
@@ -42,6 +47,8 @@ class _NomSettingsState extends State<NomSettings> {
         'establishment_type': 'Consultorio médico',
       };
       logoBase64 = saved['logo_base64'] as String?;
+      if (saved['certificate_import'] is Map)
+        certificate = Map<String, dynamic>.from(saved['certificate_import']);
       for (final e in fields.entries) {
         e.value.text = '${saved[e.key] ?? defaults[e.key] ?? ''}';
       }
@@ -49,6 +56,73 @@ class _NomSettingsState extends State<NomSettings> {
     } catch (_) {
       if (mounted)
         setState(() => error = 'No se pudo cargar la configuración.');
+    }
+  }
+
+  Future<void> importCertificate() async {
+    try {
+      final pick = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['cer'],
+        withData: true,
+      );
+      if (pick == null) return;
+      if (pick.files.single.size > 128 * 1024)
+        throw const FormatException('Máximo 128 KB');
+      final bytes =
+          pick.files.single.bytes ??
+          await File(pick.files.single.path!).readAsBytes();
+      final parsed = readCertificate(bytes);
+      if (!mounted) return;
+      final valid = parsed.validAt(DateTime.now());
+      final approved = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Confirmar datos del certificado'),
+          content: SingleChildScrollView(
+            child: Text(
+              'Titular: ${parsed.name}\nRFC: ${parsed.rfc.isEmpty ? "No encontrado" : parsed.rfc}\nEmisor: ${parsed.issuer}\nVigencia: ${parsed.notBefore.toLocal().toString().split(" ").first} a ${parsed.notAfter.toLocal().toString().split(" ").first}\n\n${valid ? "Fechas dentro de vigencia según el reloj del teléfono." : "Fuera del periodo de vigencia según el reloj del teléfono."}\n\nSe leerán nombre y RFC. Confirma que corresponden a ti. No se verificó la cadena del SAT ni revocación. Importar este archivo no firma notas ni acredita tu cédula.',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Usar estos datos'),
+            ),
+          ],
+        ),
+      );
+      if (approved != true || !mounted) return;
+      setState(() {
+        fields['doctor']!.text = parsed.name;
+        if (parsed.rfc.isNotEmpty) fields['rfc']!.text = parsed.rfc;
+        certificate = {
+          'name': parsed.name,
+          'rfc': parsed.rfc,
+          'issuer': parsed.issuer,
+          'serial': parsed.serial,
+          'not_before': parsed.notBefore.toIso8601String(),
+          'not_after': parsed.notAfter.toIso8601String(),
+          'sha256': sha256.convert(parsed.bytes).toString(),
+          'public_certificate_base64': base64Encode(parsed.bytes),
+          'imported_at': DateTime.now().toIso8601String(),
+          'trust_verified': false,
+        };
+      });
+      clinicalMessage(
+        context,
+        'Datos cargados. Revisa el perfil y pulsa Confirmar y guardar.',
+      );
+    } catch (_) {
+      if (mounted)
+        clinicalMessage(
+          context,
+          'No se pudo leer el certificado. Elige solamente el .cer público de tu e.firma, válido y de hasta 128 KB.',
+        );
     }
   }
 
@@ -85,6 +159,7 @@ class _NomSettingsState extends State<NomSettings> {
     final data = {
       for (final e in fields.entries) e.key: e.value.text.trim(),
       if (logoBase64 != null) 'logo_base64': logoBase64!,
+      if (certificate != null) 'certificate_import': certificate!,
     };
     final missing = [
       'doctor',
@@ -149,6 +224,26 @@ class _NomSettingsState extends State<NomSettings> {
                   const Text(
                     'Confirma tus datos y el establecimiento donde atiendes. Cada nota nueva conserva una copia de estos datos. Cambiar este perfil no cambia la autoría de notas anteriores.',
                   ),
+                ]),
+                clinicalPanel(context, 'Certificado de e.firma', [
+                  const Text(
+                    'Importa exclusivamente el archivo público .cer. Se leen datos para confirmar; no se solicita .key ni contraseña y no se firman documentos en esta versión.',
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: importCertificate,
+                    icon: const Icon(Icons.badge_outlined),
+                    label: const Text('Importar certificado .cer'),
+                  ),
+                  if (certificate != null) ...[
+                    Text('Certificado leído: ${certificate!["name"]}'),
+                    const Text(
+                      'Identidad criptográfica y revocación no verificadas.',
+                    ),
+                    TextButton(
+                      onPressed: () => setState(() => certificate = null),
+                      child: const Text('Quitar certificado del perfil'),
+                    ),
+                  ],
                 ]),
                 if (logoBase64 != null)
                   Image.memory(

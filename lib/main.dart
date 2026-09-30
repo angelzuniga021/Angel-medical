@@ -1,3 +1,4 @@
+import 'clinical_birthdate.dart';
 import 'clinical_nom_settings.dart';
 import 'clinical_nom.dart';
 
@@ -788,6 +789,8 @@ class _PatientFormState extends State<PatientForm> {
       ])
         key: TextEditingController(text: value(key)),
     };
+    final existingDob = parseBirthDate(c['dob']!.text);
+    if (existingDob != null) c['dob']!.text = birthDateDisplay(existingDob);
     sex = value('sex');
     blood = value('blood_type');
   }
@@ -820,6 +823,33 @@ class _PatientFormState extends State<PatientForm> {
     );
   }
 
+  Future<void> chooseBirthDate() async {
+    final now = DateTime.now();
+    final chosen = await showDatePicker(
+      context: context,
+      initialDate:
+          parseBirthDate(c['dob']!.text) ??
+          DateTime(now.year - 30, now.month, now.day),
+      firstDate: DateTime(1850),
+      lastDate: DateTime(now.year, now.month, now.day),
+      initialDatePickerMode: DatePickerMode.year,
+      helpText: 'Selecciona año, mes y día de nacimiento',
+      fieldLabelText: 'Fecha de nacimiento',
+      cancelText: 'Cancelar',
+      confirmText: 'Elegir',
+    );
+    if (chosen != null && mounted)
+      setState(() => c['dob']!.text = birthDateDisplay(chosen));
+  }
+
+  @override
+  void dispose() {
+    for (final controller in c.values) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
   Future<void> save() async {
     if (c['first_name']!.text.trim().isEmpty ||
         c['last_name']!.text.trim().isEmpty) {
@@ -829,10 +859,24 @@ class _PatientFormState extends State<PatientForm> {
       return;
     }
 
+    final dobText = c['dob']!.text.trim();
+    final birth = parseBirthDate(dobText);
+    if (dobText.isNotEmpty && birth == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Escribe una fecha válida DD/MM/AAAA, anterior o igual a hoy.',
+          ),
+        ),
+      );
+      return;
+    }
+    final normalizedDob = birth == null ? '' : birthDateIso(birth);
+
     final duplicates = await AppDb.instance.findDuplicatePatients(
       firstName: c['first_name']!.text,
       lastName: c['last_name']!.text,
-      dob: c['dob']!.text,
+      dob: normalizedDob,
       phone: c['phone']!.text,
       curp: c['curp']!.text,
       excludeId: widget.patient?['id'] as int?,
@@ -870,6 +914,7 @@ class _PatientFormState extends State<PatientForm> {
     final now = DateTime.now().toIso8601String();
     final data = <String, Object?>{
       for (final e in c.entries) e.key: e.value.text.trim(),
+      'dob': normalizedDob,
       'sex': sex,
       'blood_type': blood,
       'updated_at': now,
@@ -904,7 +949,24 @@ class _PatientFormState extends State<PatientForm> {
             field('first_name', 'Nombre *'),
             field('last_name', 'Apellidos *'),
           ),
-          field('dob', 'Fecha nacimiento AAAA-MM-DD'),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: TextField(
+              controller: c['dob'],
+              keyboardType: TextInputType.datetime,
+              decoration: InputDecoration(
+                labelText: 'Fecha de nacimiento',
+                hintText: 'DD/MM/AAAA',
+                helperText:
+                    'Escribe la fecha o toca el calendario para elegir el año.',
+                suffixIcon: IconButton(
+                  tooltip: 'Elegir fecha de nacimiento',
+                  onPressed: chooseBirthDate,
+                  icon: const Icon(Icons.calendar_month),
+                ),
+              ),
+            ),
+          ),
           two(
             DropdownButtonFormField<String>(
               value: sex.isEmpty ? null : sex,

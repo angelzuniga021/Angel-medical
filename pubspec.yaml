@@ -1,7 +1,7 @@
 name: angel_medical_mobile
 description: Angel Medical Mobile - expediente clinico offline cifrado
 publish_to: "none"
-version: 2.4.0+40
+version: 2.5.0+50
 
 environment:
   sdk: ">=3.10.0 <4.0.0"

@@ -63,6 +63,7 @@ const nomDocTypes = [
 const nomProfileLabels = <String, String>{
   'doctor': 'Nombre completo del médico',
   'license': 'Cédula profesional',
+  'rfc': 'RFC del médico (opcional)',
   'profession': 'Profesión / especialidad',
   'institution': 'Institución a la que pertenece, si aplica',
   'establishment': 'Nombre del establecimiento',
