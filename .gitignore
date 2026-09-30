@@ -1,0 +1,12 @@
+/android/
+/build/
+/.dart_tool/
+/.flutter-plugins*
+*.jks
+*.keystore
+key.properties
+*.db
+*.db-*
+*.backup
+*.apk
+.env*

@@ -1,0 +1,60 @@
+name: Generar APK Angel Medical
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      modo:
+        description: Pruebas aisladas o APK con firma estable
+        type: choice
+        options: [pruebas, comunidad, personal]
+        default: pruebas
+permissions:
+  contents: read
+jobs:
+  apk:
+    runs-on: ubuntu-24.04
+    environment: ${{ inputs.modo || 'pruebas' }}
+    timeout-minutes: 45
+    env:
+      ANGEL_MODE: ${{ inputs.modo || 'pruebas' }}
+      ANGEL_KEYSTORE_B64: ${{ secrets.ANGEL_KEYSTORE_B64 }}
+      ANGEL_STORE_PASSWORD: ${{ secrets.ANGEL_STORE_PASSWORD }}
+      ANGEL_KEY_ALIAS: ${{ secrets.ANGEL_KEY_ALIAS }}
+      ANGEL_KEY_PASSWORD: ${{ secrets.ANGEL_KEY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+      - name: Preparar Android y firma
+        run: |
+          python tools/prepare_signing.py
+          python tools/prepare_android.py
+      - run: flutter pub get
+      - name: Revisar errores de Dart
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+      - name: Pruebas
+        run: |
+          flutter test
+          python checks/check_migration.py
+          python checks/check_nom_migration.py
+      - name: Compilar APK
+        run: flutter build apk --release --dart-define=COMMUNITY_EDITION=$ANGEL_COMMUNITY --build-number=$((1000 + ${{ github.run_number }}))
+      - name: Preparar descarga
+        run: |
+          mkdir entrega
+          cp build/app/outputs/flutter-apk/app-release.apk entrega/Angel-Medical-${ANGEL_MODE}.apk
+          cd entrega
+          sha256sum *.apk > SHA256SUMS.txt
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Angel-Medical-${{ inputs.modo || 'pruebas' }}-${{ github.run_number }}
+          path: entrega/
+          retention-days: 14
