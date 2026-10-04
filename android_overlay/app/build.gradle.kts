@@ -47,6 +47,7 @@ android {
     }
     buildTypes {
         release {
+            proguardFiles("proguard-rules.pro")
             signingConfig = if (System.getenv("ANGEL_KEYSTORE_PATH") != null)
                 signingConfigs.getByName("angelRelease") else signingConfigs.getByName("debug")
         }
