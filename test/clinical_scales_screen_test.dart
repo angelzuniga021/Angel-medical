@@ -12,11 +12,11 @@ void main(){
   await tester.tap(find.text('Calcular'));await tester.pump();expect(find.textContaining('Confirma que la población'),findsOneWidget);
   await tester.scrollUntilVisible(find.byType(CheckboxListTile),-200,scrollable:find.byType(Scrollable).first);
   await tester.tap(find.byType(CheckboxListTile));await tester.pump();
-  await tester.scrollUntilVisible(find.text('Calcular'),200,scrollable:find.byType(Scrollable).first);await tester.tap(find.text('Calcular'));await tester.pump();expect(find.textContaining('Evaluación incompleta:'),findsOneWidget);
+  await tester.scrollUntilVisible(find.text('Calcular'),200,scrollable:find.byType(Scrollable).first);await tester.tap(find.text('Calcular'));await tester.pump();await tester.scrollUntilVisible(find.textContaining('Evaluación incompleta:'),100,scrollable:find.byType(Scrollable).first);expect(find.textContaining('Evaluación incompleta:'),findsOneWidget);
   await tester.scrollUntilVisible(find.byType(TextFormField),-100,scrollable:find.byType(Scrollable).first);await tester.enterText(find.byType(TextFormField),'0');
   await tester.scrollUntilVisible(find.text('Calcular'),100,scrollable:find.byType(Scrollable).first);await tester.tap(find.text('Calcular'));await tester.pump();
   await tester.scrollUntilVisible(find.text('Resultado'),100,scrollable:find.byType(Scrollable).first);expect(find.text('Sin dolor referido.'),findsOneWidget);
-  await tester.scrollUntilVisible(find.byType(TextFormField),-100,scrollable:find.byType(Scrollable).first);await tester.enterText(find.byType(TextFormField),'3');await tester.pump();expect(find.text('Resultado'),findsNothing);
+  await tester.scrollUntilVisible(find.byType(TextFormField),-100,scrollable:find.byType(Scrollable).first);expect(tester.widget<EditableText>(find.descendant(of:find.byType(TextFormField),matching:find.byType(EditableText))).controller.text,'0');await tester.enterText(find.byType(TextFormField),'3');await tester.pump();expect(find.text('Resultado'),findsNothing);
   expect(tester.takeException(),isNull);
  });
  testWidgets('PHQ alert appears before calculation and optional question cannot alter total',(tester)async{
