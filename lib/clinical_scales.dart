@@ -26,8 +26,9 @@ class ClinicalScale {
       if(value==null || !value.isFinite) throw FormatException('Evaluación incompleta: ${f.label}');
       if(f.options.isNotEmpty && !f.options.any((o)=>(o['value'] as num).toDouble()==value)) throw FormatException('Opción no válida: ${f.label}');
       if(f.min!=null && (value<f.min! || value>f.max!)) throw FormatException('Fuera de rango: ${f.label} (${f.min}–${f.max})');
-      if((f.key=='age' || id=='pain') && value!=value.roundToDouble()) throw FormatException('Utiliza un número entero: ${f.label}');
+      if((f.key=='age' || id=='pain' || (id=='news2' && ['rr','spo2','sbp','hr'].contains(f.key))) && value!=value.roundToDouble()) throw FormatException('Utiliza un número entero: ${f.label}');
       if(id=='gcs' && value<0) throw const FormatException('Glasgow: componente no evaluable. Registra E/V/M por separado en la nota, sin asignar un total.');
+      if(id=='news2' && f.key=='temperature' && (value*10-(value*10).round()).abs()>0.000001) throw const FormatException('Registra temperatura con máximo un decimal.');
       out[f.key]=value;
     }
     return out;
@@ -38,6 +39,7 @@ class ClinicalScale {
     double result;
     switch(formula) {
       case 'sum':result=fields.where((f)=>f.scored).fold<double>(0,(a,f)=>a+v[f.key]!);break;
+      case 'news2':result=newsComponents(v).values.fold<double>(0,(a,b)=>a+b);break;
       case 'bmi': result=n('weight')/math.pow(n('height')/100,2);break;
       case 'map':
         if(n('dbp')>n('sbp')) throw const FormatException('La PAD no puede superar la PAS.');
@@ -55,8 +57,19 @@ class ClinicalScale {
     if(!result.isFinite) throw const FormatException('No se pudo calcular un resultado finito.');
     return result;
   }
+  Map<String,double> newsComponents(Map<String,double> v) {
+    if(v['scale']==2 && v['scale2_confirm']!=1) throw const FormatException('NEWS2: confirma los requisitos clínicos para utilizar la escala SpO2 2.');
+    final rr=v['rr']!,sp=v['spo2']!,bp=v['sbp']!,hr=v['hr']!,temp=v['temperature']!;
+    final oxygen=v['oxygen']!;
+    final saturation=v['scale']==1?(sp<=91?3:sp<=93?2:sp<=95?1:0):(sp<=83?3:sp<=85?2:sp<=87?1:sp<=92||oxygen==0?0:sp<=94?1:sp<=96?2:3);
+    return {'Respiración':(rr<=8?3:rr<=11?1:rr<=20?0:rr<=24?2:3).toDouble(),'SpO2':saturation.toDouble(),'Oxígeno':oxygen,'PAS':(bp<=90?3:bp<=100?2:bp<=110?1:bp<=219?0:3).toDouble(),'Pulso':(hr<=40?3:hr<=50?1:hr<=90?0:hr<=110?1:hr<=130?2:3).toDouble(),'Consciencia':v['consciousness']!,'Temperatura':(temp<=35?3:temp<=36?1:temp<=38?0:temp<=39?1:2).toDouble()};
+  }
   String interpretation(double s) {
     switch(id) {
+      case 'news2':return s>=7?'Riesgo alto: respuesta urgente/emergente y monitorización según protocolo.':s>=5?'Riesgo medio: valoración clínica urgente.':'Total 0–4: revisar también cada componente; un valor individual de 3 activa respuesta urgente.';
+      case 'rcri':return s>=3?'Tres o más factores del RCRI. Integrar evaluación perioperatoria y capacidad funcional.':'${s.toInt()} factores del RCRI. Interpretar junto con síntomas, cirugía y capacidad funcional.';
+      case 'apgar':return s<=3?'Puntaje bajo. Interpretar según minuto de vida e intervenciones realizadas.':s<=6?'Puntaje intermedio. Interpretar según minuto de vida e intervenciones realizadas.':'Puntaje 7–10. Interpretar según minuto de vida; no excluye otros problemas neonatales.';
+      case 'rockall':return 'Rockall completo: $s puntos. Estratificación posterior a endoscopia; no autoriza alta por sí solo.';
       case 'phq9':return s<5?'Síntomas depresivos mínimos.':s<10?'Síntomas depresivos leves.':s<15?'Síntomas depresivos moderados.':s<20?'Síntomas depresivos moderadamente graves.':'Síntomas depresivos graves.';
       case 'gad7':return s<5?'Síntomas de ansiedad mínimos.':s<10?'Síntomas de ansiedad leves.':s<15?'Síntomas de ansiedad moderados.':'Síntomas de ansiedad graves.';
       case 'phq2':return s>=3?'Tamizaje positivo: ampliar entrevista y considerar PHQ-9.':'Tamizaje por debajo del umbral de 3; no excluye depresión.';
@@ -84,6 +97,9 @@ class ClinicalScale {
     }
   }
   List<String> alerts(Map<String,String> input) {
+    if(id=='news2') {
+      try {final parts=newsComponents(validate(input));if(parts.values.any((v)=>v==3))return ['NEWS2: uno o más componentes puntúan 3. Requiere respuesta clínica urgente incluso con total <5.'];}on FormatException {return [];}
+    }
     if(id=='phq9' && (double.tryParse(input['q9']??'')??0)>0) return ['Ítem 9 positivo: evaluar ahora pensamientos de muerte/autolesión, intención, plan, medios y seguridad. El total no determina el riesgo. Si existe peligro inmediato, activar el protocolo de urgencias y acompañamiento.'];
     return [];
   }
@@ -91,7 +107,7 @@ class ClinicalScale {
     final v=validate(input);
     final d=date.toLocal();
     final when='${d.day.toString().padLeft(2,'0')}/${d.month.toString().padLeft(2,'0')}/${d.year} ${d.hour.toString().padLeft(2,'0')}:${d.minute.toString().padLeft(2,'0')} (hora local)';
-    return '$name · versión $version\nFecha: $when\nResultado: ${formatScaleValue(value)} $unit\n${interpretation(value)}\n${alerts(input).join('\n')}\n$instructions\n${fields.map((f)=>'${f.label}: ${v.containsKey(f.key)?f.display(v[f.key]!):"Sin respuesta (no puntúa)"}').join('\n')}\n\nObservaciones: ${notes.trim().isEmpty?'Sin observaciones adicionales':notes.trim()}\nAplicación: $population\nLimitaciones: $limitations\nFuente: $source${translationSource.isEmpty?'':'\nVersión en español: $translationSource'}${attribution.isEmpty?'':'\n$attribution'}';
+    return '$name · versión $version\nFecha: $when\nResultado: ${formatScaleValue(value)} $unit\n${interpretation(value)}\n${alerts(input).join('\n')}\n${id=='news2'?newsComponents(v).entries.map((e)=>'${e.key}: ${formatScaleValue(e.value)} puntos').join('\n'):''}\n$instructions\n${fields.map((f)=>'${f.label}: ${v.containsKey(f.key)?f.display(v[f.key]!):"Sin respuesta (no puntúa)"}').join('\n')}\n\nObservaciones: ${notes.trim().isEmpty?'Sin observaciones adicionales':notes.trim()}\nAplicación: $population\nLimitaciones: $limitations\nFuente: $source${translationSource.isEmpty?'':'\nVersión en español: $translationSource'}${attribution.isEmpty?'':'\n$attribution'}';
   }
 }
 String formatScaleValue(double value)=>value==value.roundToDouble()?value.toInt().toString():value.toStringAsFixed(2);

@@ -3048,6 +3048,439 @@
           ]
         }
       ]
+    },
+    {
+      "id": "rcri",
+      "name": "RCRI de Lee · modelo 1999",
+      "area": "Perioperatorio",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos evaluados antes de cirugía mayor no cardiaca. Modelo original: pacientes ≥50 años en cirugía electiva.",
+      "limitations": "No autoriza cirugía ni descarta un síndrome coronario activo. No es Gupta/NSQIP. Los porcentajes dependen de la cohorte y del desenlace; aquí se registra únicamente el número de factores.",
+      "source": "https://pubmed.ncbi.nlm.nih.gov/10477528/",
+      "formula": "sum",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "surgery",
+          "label": "Cirugía intraperitoneal, intratorácica o vascular suprainguinal",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "ischemic",
+          "label": "Antecedente de cardiopatía isquémica (IAM, prueba de isquemia positiva, angina, nitratos por isquemia u ondas Q patológicas)",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "hf",
+          "label": "Antecedente de insuficiencia cardiaca",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "cerebrovascular",
+          "label": "Antecedente de evento vascular cerebral o AIT",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "insulin",
+          "label": "Tratamiento preoperatorio con insulina",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "creatinine",
+          "label": "Creatinina sérica preoperatoria >2.0 mg/dL (criterio del modelo 1999)",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "apgar",
+      "name": "Apgar · registro neonatal",
+      "area": "Neonatología",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Recién nacidos. Registrar por separado a 1 y 5 minutos; si corresponde, reevaluar a 10, 15 y 20 minutos.",
+      "limitations": "No determina el inicio de reanimación: no esperar el puntaje para intervenir. No diagnostica asfixia ni predice por sí solo el pronóstico neurológico individual. Documentar también las intervenciones de reanimación.",
+      "source": "https://www.acog.org/clinical/clinical-guidance/committee-opinion/articles/2015/10/the-apgar-score",
+      "formula": "sum",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "minute",
+          "label": "Minuto de vida al evaluar",
+          "options": [
+            {
+              "label": "1 minuto",
+              "value": 1
+            },
+            {
+              "label": "5 minutos",
+              "value": 5
+            },
+            {
+              "label": "10 minutos",
+              "value": 10
+            },
+            {
+              "label": "15 minutos",
+              "value": 15
+            },
+            {
+              "label": "20 minutos",
+              "value": 20
+            }
+          ],
+          "scored": false
+        },
+        {
+          "key": "color",
+          "label": "Coloración",
+          "options": [
+            {
+              "label": "Cianosis o palidez generalizada",
+              "value": 0
+            },
+            {
+              "label": "Tronco rosado y extremidades cianóticas",
+              "value": 1
+            },
+            {
+              "label": "Completamente rosado",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "hr",
+          "label": "Frecuencia cardiaca",
+          "options": [
+            {
+              "label": "Ausente",
+              "value": 0
+            },
+            {
+              "label": "<100 latidos/min",
+              "value": 1
+            },
+            {
+              "label": "≥100 latidos/min",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "reflex",
+          "label": "Respuesta a estímulo",
+          "options": [
+            {
+              "label": "Sin respuesta",
+              "value": 0
+            },
+            {
+              "label": "Mueca",
+              "value": 1
+            },
+            {
+              "label": "Tos, estornudo, llanto o retirada activa",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "tone",
+          "label": "Tono muscular",
+          "options": [
+            {
+              "label": "Flácido",
+              "value": 0
+            },
+            {
+              "label": "Alguna flexión de extremidades",
+              "value": 1
+            },
+            {
+              "label": "Movimientos activos",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "resp",
+          "label": "Esfuerzo respiratorio",
+          "options": [
+            {
+              "label": "Ausente",
+              "value": 0
+            },
+            {
+              "label": "Lento o irregular; llanto débil",
+              "value": 1
+            },
+            {
+              "label": "Respiración adecuada; llanto vigoroso",
+              "value": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rockall",
+      "name": "Rockall completo · modelo 1996",
+      "area": "Gastroenterología",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos con hemorragia digestiva alta, después de la endoscopia; deben conocerse los cinco componentes.",
+      "limitations": "No es Rockall preendoscópico. La ausencia de datos endoscópicos impide el cálculo completo; no asignar cero por falta de estudio. No decide alta, transfusión ni tratamiento automáticamente.",
+      "source": "https://pubmed.ncbi.nlm.nih.gov/8675081/",
+      "formula": "sum",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "agegroup",
+          "label": "Edad",
+          "options": [
+            {
+              "label": "<60 años",
+              "value": 0
+            },
+            {
+              "label": "60–79 años",
+              "value": 1
+            },
+            {
+              "label": "≥80 años",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "shock",
+          "label": "Choque / signos vitales",
+          "options": [
+            {
+              "label": "PAS ≥100 mmHg y FC <100 latidos/min",
+              "value": 0
+            },
+            {
+              "label": "PAS ≥100 mmHg y FC ≥100 latidos/min",
+              "value": 1
+            },
+            {
+              "label": "PAS <100 mmHg (cualquier FC)",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "comorbidity",
+          "label": "Comorbilidad: seleccionar el nivel más alto presente",
+          "options": [
+            {
+              "label": "Sin comorbilidad mayor",
+              "value": 0
+            },
+            {
+              "label": "Insuficiencia cardiaca, cardiopatía isquémica u otra comorbilidad mayor",
+              "value": 2
+            },
+            {
+              "label": "Insuficiencia renal, insuficiencia hepática o neoplasia diseminada",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "diagnosis",
+          "label": "Diagnóstico endoscópico",
+          "options": [
+            {
+              "label": "Desgarro de Mallory-Weiss, o sin lesión y sin estigmas de hemorragia reciente",
+              "value": 0
+            },
+            {
+              "label": "Cualquier otro diagnóstico",
+              "value": 1
+            },
+            {
+              "label": "Neoplasia del tracto gastrointestinal superior",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "stigmata",
+          "label": "Estigmas endoscópicos de hemorragia reciente",
+          "options": [
+            {
+              "label": "Ninguno o únicamente mancha oscura",
+              "value": 0
+            },
+            {
+              "label": "Sangre en tracto GI superior, coágulo adherido, vaso visible o sangrado activo",
+              "value": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "news2",
+      "name": "NEWS2 · RCP 2017",
+      "area": "Urgencias",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Personas ≥16 años con enfermedad aguda. No utilizar en embarazo. Confirmar todos los signos vitales; valorar contexto y evolución.",
+      "limitations": "No diagnostica sepsis ni reemplaza valoración clínica. Escala SpO2 2 solo con insuficiencia respiratoria hipercápnica confirmada por gasometría, objetivo prescrito 88–92% y decisión clínica documentada; EPOC por sí sola no basta. Cualquier deterioro requiere revisión aunque el total sea bajo.",
+      "source": "https://www.rcp.ac.uk/resources/national-early-warning-score-news-2/",
+      "formula": "news2",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "rr",
+          "label": "Frecuencia respiratoria (respiraciones/min; entero)",
+          "min": 0,
+          "max": 100
+        },
+        {
+          "key": "spo2",
+          "label": "SpO2 (%; entero)",
+          "min": 0,
+          "max": 100
+        },
+        {
+          "key": "scale",
+          "label": "Escala de saturación",
+          "options": [
+            {
+              "label": "Escala 1: uso habitual",
+              "value": 1
+            },
+            {
+              "label": "Escala 2: hipercapnia confirmada, objetivo 88–92% y decisión documentada",
+              "value": 2
+            }
+          ],
+          "scored": false
+        },
+        {
+          "key": "scale2_confirm",
+          "label": "Solo para escala 2: confirmo gasometría con hipercapnia, objetivo 88–92% prescrito y decisión clínica documentada",
+          "options": [
+            {
+              "label": "No confirmado",
+              "value": 0
+            },
+            {
+              "label": "Sí, confirmado y documentado",
+              "value": 1
+            }
+          ],
+          "scored": false,
+          "optional": true
+        },
+        {
+          "key": "oxygen",
+          "label": "Aire ambiente u oxígeno suplementario",
+          "options": [
+            {
+              "label": "Aire ambiente",
+              "value": 0
+            },
+            {
+              "label": "Oxígeno suplementario",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "sbp",
+          "label": "Presión arterial sistólica (mmHg; entero)",
+          "min": 20,
+          "max": 300
+        },
+        {
+          "key": "hr",
+          "label": "Frecuencia cardiaca (latidos/min; entero)",
+          "min": 0,
+          "max": 300
+        },
+        {
+          "key": "consciousness",
+          "label": "Estado de consciencia",
+          "options": [
+            {
+              "label": "Alerta, sin confusión nueva",
+              "value": 0
+            },
+            {
+              "label": "Confusión nueva / responde a voz / responde a dolor / no responde (C/V/P/U)",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "temperature",
+          "label": "Temperatura (°C; máximo un decimal)",
+          "min": 25,
+          "max": 45
+        }
+      ],
+      "attribution": "Reproduced from: Royal College of Physicians. National Early Warning Score (NEWS) 2: Standardising the assessment of acute-illness severity in the NHS. Updated report of a working party. London: RCP, 2017.\nThe wording of this translation has not been specifically approved by the Royal College of Physicians – please refer to the English language version before making any clinical use of this information."
     }
   ]
 }

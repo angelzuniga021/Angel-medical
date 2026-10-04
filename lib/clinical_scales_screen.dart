@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'clinical_scale_pdf.dart';
+import 'clinical_prevent_access.dart';
 import 'package:printing/printing.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'db.dart';
@@ -39,7 +40,8 @@ class _ClinicalScalesScreenState extends State<ClinicalScalesScreen> {
     if(text!=null && widget.selectForNote && mounted)Navigator.pop(context,text);
   }
   @override Widget build(BuildContext context){
-    final visible=(tools??[]).where((t)=>(area=='Todas'||t.area==area)&&(kind=='Todas'||(kind=='Calculadoras')==(t.area=='Calculadoras'))&&(!favoritesOnly||favorites.contains(t.id))&&('${t.name} ${t.area} ${t.id}'.toLowerCase().contains(query.toLowerCase()))).toList();
+    final visible=(tools??[]).where((t)=>(area=='Todas'||t.area==area)&&(kind=='Todas'||(kind=='Calculadoras')==(t.area=='Calculadoras'))&&(!favoritesOnly||favorites.contains(t.id))&&('${t.name} ${t.area} ${t.id} ${t.population}'.toLowerCase().contains(query.toLowerCase()))).toList();
+    final showPrevent=(area=='Todas'||area=='Cardiovascular') && !favoritesOnly && kind!='Escalas' && ('prevent cardiovascular corazón aha'.contains(query.toLowerCase()));
     return Scaffold(appBar:AppBar(title:const Text('Escalas y calculadoras'),actions:[
       if(widget.patient!=null)IconButton(tooltip:'Historial del paciente',icon:const Icon(Icons.history),onPressed:()async{final text=await Navigator.push<String>(context,MaterialPageRoute(builder:(_)=>ScaleHistory(patient:widget.patient!,selectForNote:widget.selectForNote)));if(text!=null&&widget.selectForNote&&mounted)Navigator.pop(context,text);}),
       IconButton(tooltip:'Actualizar',onPressed:load,icon:const Icon(Icons.refresh)),
@@ -50,7 +52,8 @@ class _ClinicalScalesScreenState extends State<ClinicalScalesScreen> {
       FilterChip(label:Text('Favoritos · ${favorites.length}'),selected:favoritesOnly,onSelected:(v)=>setState(()=>favoritesOnly=v)),
       Wrap(spacing:8,children:[for(final k in ['Todas','Escalas','Calculadoras'])ChoiceChip(label:Text(k),selected:kind==k,onSelected:(_)=>setState(()=>kind=k))]),
       Padding(padding:const EdgeInsets.symmetric(vertical:12),child:Text('${visible.length} de ${tools!.length} herramientas · disponibles sin internet',style:Theme.of(context).textTheme.titleSmall)),
-      if(visible.isEmpty)const Padding(padding:EdgeInsets.all(20),child:Text('No hay coincidencias. Cambia el filtro.')),
+      if(showPrevent)Card(child:ListTile(leading:const Icon(Icons.open_in_new),title:const Text('PREVENT · calculadora oficial en línea'),subtitle:const Text('Requiere internet · cálculo integrado pendiente'),onTap:()=>Navigator.push(context,MaterialPageRoute(builder:(_)=>const ClinicalPreventAccess())))),
+      if(visible.isEmpty&&!showPrevent)const Padding(padding:EdgeInsets.all(20),child:Text('No hay coincidencias. Cambia el filtro.')),
       for(final t in visible)Card(child:ListTile(isThreeLine:true,leading:Icon(t.area=='Calculadoras'?Icons.calculate_outlined:Icons.assignment_outlined),title:Text(t.name),subtitle:Text('${t.area} · ${t.fields.where((f)=>f.scored).length} datos\nVersión ${t.version} · ver indicación y fuente'),onTap:()=>open(t),trailing:IconButton(tooltip:'Favorito',icon:Icon(favorites.contains(t.id)?Icons.star:Icons.star_border),onPressed:()=>favorite(t)))),
     ]));
   }
@@ -160,7 +163,7 @@ class _ScaleHistoryState extends State<ScaleHistory>{
       const Text('Los registros se conservan. Para una corrección o reevaluación, guarda una nueva evaluación y documenta el motivo.'),
       DropdownButtonFormField<String>(value:filter,isExpanded:true,items:[const DropdownMenuItem(value:'Todas',child:Text('Todas')),for(final id in rows!.map((r)=>'${r['scale_id']}').toSet())DropdownMenuItem(value:id,child:Text('${rows!.firstWhere((r)=>r['scale_id']==id)['scale_name']}',overflow:TextOverflow.ellipsis))],onChanged:(v)=>setState(()=>filter=v??'Todas')),
       if(filter!='Todas'&&list.isNotEmpty)clinicalPanel(context,'Evolución · más reciente primero',[
-        const Text('Compara fechas, respuestas y contexto; los resultados no son intercambiables entre versiones.'),
+        const Text('Compara fechas, respuestas y contexto; los resultados no son intercambiables entre versiones. En Apgar, compara únicamente el mismo minuto de vida.'),
         for(final r in list.take(12))ListTile(title:Text('${formatScaleValue((r['score'] as num).toDouble())} ${r['unit']}'),subtitle:Text('${clinicalDate(r['date'])} · v${r['scale_version']}')),
       ]),
       if(list.isEmpty)const Padding(padding:EdgeInsets.all(20),child:Text('Todavía no hay evaluaciones guardadas.')),

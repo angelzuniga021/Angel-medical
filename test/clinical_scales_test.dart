@@ -8,7 +8,7 @@ void main(){
  ClinicalScale t(String id)=>tools.singleWhere((t)=>t.id==id);
  Map<String,String> zeros(ClinicalScale t)=>{for(final f in t.fields)f.key:f.options.isNotEmpty?'${f.options.reduce((a,b)=>(a['value'] as num)<(b['value'] as num)?a:b)['value']}':'${f.min}'};
  test('Catalog identities, provenance and supported formulas',(){
-   expect(tools.length,33);expect(tools.map((t)=>t.id).toSet().length,33);
+   expect(tools.length,37);expect(tools.map((t)=>t.id).toSet().length,37);
    for(final tool in tools){expect(tool.source,startsWith('https://'));expect(tool.population,isNotEmpty);expect(tool.limitations,isNotEmpty);expect(tool.version,'1.0');}
  });
  for(final tool in tools){
@@ -30,8 +30,8 @@ void main(){
    expect(t('perc').source,contains('18318689'));
  });
  test('Published ranges and negative weighted criteria',(){
-   const maxima={'gcs':15,'curb65':5,'crb65':4,'qsofa':3,'sirs':4,'wells_pe':12.5,'wells_dvt':9,'perc':8,'heart':10,'cha_va':8,'cha_vasc':9,'hasbled':9,'centor':4,'mcisaac':5,'alvarado':10,'padua':20,'gbs':23,'sofa':24,'phq9':27,'phq2':6,'gad7':21,'gad2':6,'spesi':6,'geneva':22};
-   for(final e in maxima.entries){final tool=t(e.key);final input={for(final f in tool.fields.where((f)=>f.scored))f.key:'${f.options.map((o)=>(o['value'] as num).toDouble()).reduce(math.max)}'};expect(tool.calculate(input),e.value,reason:e.key);}
+   const maxima={'gcs':15,'curb65':5,'crb65':4,'qsofa':3,'sirs':4,'wells_pe':12.5,'wells_dvt':9,'perc':8,'heart':10,'cha_va':8,'cha_vasc':9,'hasbled':9,'centor':4,'mcisaac':5,'alvarado':10,'padua':20,'gbs':23,'sofa':24,'phq9':27,'phq2':6,'gad7':21,'gad2':6,'spesi':6,'geneva':22,'rcri':6,'rockall':11,'apgar':10};
+   for(final e in maxima.entries){final tool=t(e.key);final input={...zeros(tool),for(final f in tool.fields.where((f)=>f.scored))f.key:'${f.options.map((o)=>(o['value'] as num).toDouble()).reduce(math.max)}'};expect(tool.calculate(input),e.value,reason:e.key);}
    final dvt=zeros(t('wells_dvt'));expect(t('wells_dvt').calculate(dvt),-2);
    final mc=zeros(t('mcisaac'));expect(t('mcisaac').calculate(mc),-1);
    expect(t('gcs').calculate({'eye':'1','verbal':'1','motor':'1'}),3);
@@ -72,6 +72,29 @@ void main(){
    expect(t('geneva').interpretation(3),contains('baja'));expect(t('geneva').interpretation(4),contains('intermedia'));expect(t('geneva').interpretation(10),contains('intermedia'));expect(t('geneva').interpretation(11),contains('alta'));
    expect(t('spesi').interpretation(0),contains('bajo'));expect(t('spesi').interpretation(1),contains('elevado'));
    for(final id in ['phq9','phq2','gad7','gad2']){expect(t(id).instructions,contains('2 semanas'));expect(t(id).translationSource,startsWith('https://depts.washington.edu/'));expect(t(id).attribution,contains('Pfizer'));}
+ });
+ test('NEWS2 official thresholds, single red component and scale 2 safeguards',(){
+   final tool=t('news2');final normal={'rr':'16','spo2':'98','scale':'1','oxygen':'0','sbp':'120','hr':'75','consciousness':'0','temperature':'37'};
+   expect(tool.calculate(normal),0);
+   for(final e in {8:3,9:1,11:1,12:0,20:0,21:2,24:2,25:3}.entries){expect(tool.newsComponents(tool.validate({...normal,'rr':'${e.key}'}))['Respiración'],e.value);}
+   for(final e in {91:3,92:2,93:2,94:1,95:1,96:0}.entries){expect(tool.newsComponents(tool.validate({...normal,'spo2':'${e.key}'}))['SpO2'],e.value);}
+   for(final e in {90:3,91:2,100:2,101:1,110:1,111:0,219:0,220:3}.entries){expect(tool.newsComponents(tool.validate({...normal,'sbp':'${e.key}'}))['PAS'],e.value);}
+   for(final e in {40:3,41:1,50:1,51:0,90:0,91:1,110:1,111:2,130:2,131:3}.entries){expect(tool.newsComponents(tool.validate({...normal,'hr':'${e.key}'}))['Pulso'],e.value);}
+   for(final e in {35.0:3,35.1:1,36.0:1,36.1:0,38.0:0,38.1:1,39.0:1,39.1:2}.entries){expect(tool.newsComponents(tool.validate({...normal,'temperature':'${e.key}'}))['Temperatura'],e.value);}
+   expect(()=>tool.calculate({...normal,'scale':'2'}),throwsFormatException);
+   expect(()=>tool.calculate({...normal,'scale':'2','scale2_confirm':'0'}),throwsFormatException);
+   final scale2={...normal,'scale':'2','scale2_confirm':'1'};
+   for(final e in {83:3,84:2,85:2,86:1,87:1,88:0,92:0,93:0,100:0}.entries){expect(tool.newsComponents(tool.validate({...scale2,'spo2':'${e.key}'}))['SpO2'],e.value);}
+   for(final e in {92:0,93:1,94:1,95:2,96:2,97:3}.entries){expect(tool.newsComponents(tool.validate({...scale2,'oxygen':'2','spo2':'${e.key}'}))['SpO2'],e.value);}
+   expect(tool.calculate({...normal,'rr':'25','spo2':'90','oxygen':'2','sbp':'80','hr':'140','consciousness':'3','temperature':'35'}),20);
+   expect(tool.calculate({...normal,'rr':'25'}),3);expect(tool.alerts({...normal,'rr':'25'}).single,contains('componente'));expect(tool.alerts(normal),isEmpty);
+   expect(()=>tool.calculate({...normal,'rr':'16.5'}),throwsFormatException);expect(()=>tool.calculate({...normal,'temperature':'35.05'}),throwsFormatException);
+   expect(tool.interpretation(5),contains('urgente'));expect(tool.interpretation(7),contains('alto'));
+ });
+ test('Apgar minute recorded without adding to score',(){
+   final tool=t('apgar');final input=zeros(tool);expect(tool.calculate({...input,'minute':'20'}),0);
+   expect(tool.summary({...input,'minute':'5'},0,DateTime(2026,10,4),''),contains('5 minutos'));
+   expect(()=>tool.calculate({...input,'minute':''}),throwsFormatException);
  });
  test('Summary preserves zero answers, limitations and version',(){
    final tool=t('perc');final input=zeros(tool);final text=tool.summary(input,tool.calculate(input),DateTime(2026,10,4),'Contexto ficticio');

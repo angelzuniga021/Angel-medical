@@ -23,4 +23,13 @@ void main(){
    final dir=Directory('scale-fixture')..createSync();File('${dir.path}/phq9.pdf').writeAsBytesSync(bytes);
  });
 
+ test('NEWS2 PDF includes component scores, red alert and translation notice',()async{
+   final tool=parseScaleCatalog(File('assets/scales/catalog.json').readAsStringSync()).singleWhere((t)=>t.id=='news2');
+   final input={'rr':'25','spo2':'98','scale':'1','oxygen':'0','sbp':'120','hr':'75','consciousness':'0','temperature':'37'};
+   final summary=tool.summary(input,tool.calculate(input),DateTime(2026,10,4),'Caso ficticio de prueba.');
+   final bytes=await buildScalePdf({'summary':summary,'payload':jsonEncode({'patient':{'first_name':'Paciente','last_name':'Ficticio'},'profile':{'doctor':'Médico Ficticio','license':'PRUEBA'}})});
+   expect(bytes.sublist(0,4),[37,80,68,70]);expect(summary,contains('Respiración: 3 puntos'));expect(summary,contains('not been specifically approved'));
+   final dir=Directory('scale-fixture')..createSync();File('${dir.path}/news2.pdf').writeAsBytesSync(bytes);
+ });
+
 }

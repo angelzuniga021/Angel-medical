@@ -1,8 +1,15 @@
-# Ángel Medical 3.1
+# Ángel Medical 3.2
 
 Aplicación Flutter para expediente clínico local cifrado en Android. Cada médico conserva su perfil y su propia base. Esta edición prepara intercambio futuro con PC, pero no incluye todavía una aplicación de escritorio ni sincronización entre dispositivos.
 
-## Novedades de 3.1
+## Novedades de 3.2
+
+- 37 herramientas locales (29 escalas y 8 calculadoras). Se añaden NEWS2 RCP 2017, RCRI Lee 1999, Apgar y Rockall completo.
+- NEWS2 usa los valores medidos, valida escala de saturación 2 y muestra alerta por componente de 3 puntos aunque el total sea bajo.
+- Acceso externo a PREVENT oficial; requiere internet. No contiene sus ecuaciones ni valida/transcribe resultados. La integración local queda pendiente del acuerdo y código oficial de la AHA.
+- Fuentes, alcance y permisos: [ESCALAS_3_2.md](ESCALAS_3_2.md).
+
+## Novedades previas de 3.1
 
 - Catálogo independiente de 33 herramientas: 25 escalas y 8 calculadoras, con favoritos, búsqueda, filtro por tipo/área, cálculo sin internet y registro por paciente.
 - Nuevas: PHQ-9, PHQ-2, GAD-7, GAD-2, sPESI 2010 y Ginebra revisada 2006.

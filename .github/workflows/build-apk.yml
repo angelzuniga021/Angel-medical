@@ -61,6 +61,10 @@ jobs:
           grep "Ítem 9 positivo" scale-fixture/phq9.txt
           grep "Extremadamente difícil" scale-fixture/phq9.txt
           grep "Pfizer" scale-fixture/phq9.txt
+          pdftoppm -scale-to 1100 -png scale-fixture/news2.pdf scale-fixture/news2
+          pdftotext scale-fixture/news2.pdf scale-fixture/news2.txt
+          grep "Respiración: 3 puntos" scale-fixture/news2.txt
+          grep "Royal College of Physicians" scale-fixture/news2.txt
           pdfsig recipe-fixture/signed.pdf
           pdfsig recipe-fixture/signed.pdf | grep "Signature is Valid"
           pdftoppm -scale-to 1100 -png recipe-fixture/signed.pdf recipe-fixture/signed

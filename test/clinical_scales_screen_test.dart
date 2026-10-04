@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../lib/clinical_scales.dart';
 import '../lib/clinical_scales_screen.dart';
 import '../lib/clinical_theme.dart';
+import '../lib/clinical_prevent_access.dart';
 void main(){
  final tools=parseScaleCatalog(File('assets/scales/catalog.json').readAsStringSync());
  testWidgets('Scale blocks incomplete input and invalidates result after edit',(tester)async{
@@ -37,7 +38,13 @@ void main(){
   await tester.scrollUntilVisible(find.text('Resultado'),100,scrollable:find.byType(Scrollable).first);
   expect(find.text('1 puntos'),findsOneWidget);expect(find.text('Síntomas depresivos mínimos.'),findsOneWidget);expect(tester.takeException(),isNull);
  });
- for(final id in ['sofa','phq9','gad7']){
+ testWidgets('PREVENT resource discloses online access without claiming an integrated calculation',(tester)async{
+  tester.view.physicalSize=const Size(320,750);tester.view.devicePixelRatio=1;addTearDown(tester.view.resetPhysicalSize);addTearDown(tester.view.resetDevicePixelRatio);
+  await tester.pumpWidget(MaterialApp(builder:(ctx,child)=>MediaQuery(data:MediaQuery.of(ctx).copyWith(textScaler:const TextScaler.linear(1.5)),child:child!),home:const ClinicalPreventAccess()));
+  await tester.scrollUntilVisible(find.text('Revisar acuerdo oficial de acceso'),150,scrollable:find.byType(Scrollable).first);
+  expect(find.textContaining('Este acceso requiere internet.'),findsOneWidget);expect(find.text('Calcular'),findsNothing);expect(tester.takeException(),isNull);
+ });
+ for(final id in ['sofa','phq9','gad7','news2']){
  for(final brightness in Brightness.values){
   testWidgets('Long scale criteria readable in narrow large-text $id $brightness',(tester)async{
    tester.view.physicalSize=const Size(320,750);tester.view.devicePixelRatio=1;addTearDown(tester.view.resetPhysicalSize);addTearDown(tester.view.resetDevicePixelRatio);
