@@ -23,3 +23,5 @@ La app no persiste la clave privada ni contraseña en la base. Borra buffers con
 ## Validación
 
 Pruebas de migración aditiva, conservación de datos y adjuntos, catálogo/favoritos, mapa/lateralidad, interfaz estrecha con texto ampliado, huella de versión y exportación binaria. Pruebas Java: firma correcta, datos alterados, contraseña incorrecta, clave ajena y certificado caducado. OpenSSL verifica de forma independiente CMS y rechaza contenido alterado; `-noverify` no comprueba confianza de certificado.
+
+Biblioteca criptográfica: Bouncy Castle 1.86, actualizada por correcciones de seguridad, incluidas entradas PBE. Fuente: https://www.bouncycastle.org/resources/new-release-bouncy-castle-java-1-86/
