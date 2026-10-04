@@ -1,3 +1,5 @@
+import 'clinical_cie_screen.dart';
+import 'clinical_catalog.dart';
 import 'clinical_guidance.dart';
 
 import 'dart:async';
@@ -543,40 +545,12 @@ class _ClinicalEditorState extends State<ClinicalEditor>
   }
 
   Future<void> cie() async {
-    final q = await askClinicalText(
-      context,
-      'Buscar diagnóstico CIE-10',
-      lines: 1,
-    );
-    if (q == null || q.isEmpty) return;
-    try {
-      final rows = await AppDb.instance.searchCie(q);
-      if (!mounted) return;
-      final row = await showModalBottomSheet<Map<String, Object?>>(
-        context: context,
-        builder: (ctx) => SafeArea(
-          child: ListView(
-            children: [
-              if (rows.isEmpty)
-                const ListTile(title: Text('Sin coincidencias')),
-              for (final r in rows)
-                ListTile(
-                  title: Text('${r['code']} · ${r['name']}'),
-                  onTap: () => Navigator.pop(ctx, r),
-                ),
-            ],
-          ),
-        ),
-      );
-      if (row != null && mounted) {
-        final c = fields['diagnoses']!;
-        c.text = [
-          c.text,
-          '${row['code']} · ${row['name']}',
-        ].where((x) => x.isNotEmpty).join('\n');
-      }
-    } catch (_) {
-      if (mounted) clinicalMessage(context, 'No se pudo consultar CIE-10.');
+    final row = await Navigator.push<Map<String, Object?>>(context,
+      MaterialPageRoute(builder: (_) => const ClinicalCieScreen(select: true)));
+    if (row != null && mounted) {
+      final c = fields['diagnoses']!;
+      c.text = [c.text, '${BundledCie.displayCode('${row['code']}')} · ${row['name']}']
+          .where((x) => x.isNotEmpty).join('\n');
     }
   }
 

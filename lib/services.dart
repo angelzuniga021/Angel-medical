@@ -535,38 +535,28 @@ class CieImporter {
 
 class CieBootstrap {
   static Future<void> ensureLoaded() async {
+    final raw = await rootBundle.loadString('assets/data/cie10_full.json');
+    final items = (jsonDecode(raw) as List).cast<Map<String, dynamic>>();
+    validateCatalogRows(items.map((m) => ['${m['code']}', '${m['name']}', '${m['chapter']}']));
+    BundledCie.entries = {for (final m in items) '${m['code']}': m};
+    final version = sha256.convert(utf8.encode(raw)).toString();
+    if (await AppDb.instance.getSetting('bundled_cie_version') == version) return;
     final db = await AppDb.instance.database;
-    final countRow = await db.rawQuery('SELECT COUNT(*) n FROM cie10');
-    final count = (countRow.first['n'] as int?) ?? 0;
-    if (count > 1000) return;
-
-    String raw;
-    try {
-      raw = await rootBundle.loadString('assets/data/cie10_full.json');
-    } catch (_) {
-      return;
-    }
-    final items = jsonDecode(raw) as List<dynamic>;
-    final batch = db.batch();
-    for (final item in items) {
-      final m = item as Map<String, dynamic>;
-      final code = '${m['code'] ?? ''}'.trim().toUpperCase();
-      final name = '${m['name'] ?? ''}'.trim();
-      final chapter = '${m['chapter'] ?? ''}'.trim();
-      if (code.isEmpty || name.isEmpty) continue;
-      batch.insert('cie10', {
-        'code': code,
-        'name': name,
-        'chapter': chapter,
-        'search_text': CieImporter.norm('$code $name'),
-        'favorite': 0,
-      }, conflictAlgorithm: ConflictAlgorithm.replace);
-    }
-    await batch.commit(noResult: true);
-    await AppDb.instance.audit(
-      'BOOTSTRAP_CIE10',
-      '${items.length} diagnosticos',
-    );
+    await db.transaction((txn) async {
+      final batch = txn.batch();
+      for (final m in items.where((m) => m['valid'] == true)) {
+        // IGNORE preserves imported labels, row IDs and favorites. No REPLACE.
+        batch.rawInsert(
+          'INSERT OR IGNORE INTO cie10(code,name,chapter,search_text,favorite) VALUES(?,?,?,?,0)',
+          [m['code'], m['name'], m['chapter'], normalizeCatalogText('${m['code']} ${BundledCie.displayCode('${m['code']}')} ${m['name']}')],
+        );
+      }
+      await batch.commit(noResult: true);
+      await txn.rawInsert(
+        'INSERT INTO app_settings(setting_key,setting_value) VALUES(?,?) ON CONFLICT(setting_key) DO UPDATE SET setting_value=excluded.setting_value',
+        ['bundled_cie_version', version],
+      );
+    });
   }
 }
 

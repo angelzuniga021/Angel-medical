@@ -39,3 +39,15 @@ List<CatalogEntry> validateCatalogRows(Iterable<List<String>> rows) {
     );
   return entries;
 }
+
+/// Reference flags from the bundled catalog; historic notes are never rewritten.
+class BundledCie {
+  static Map<String, Map<String, dynamic>> entries = {};
+  static String canonical(String code) => code.toUpperCase().replaceAll('.', '').trim();
+  static bool selectable(String code) => entries[canonical(code)]?['valid'] != false;
+  static bool complementary(String code) => entries[canonical(code)]?['complementary'] == true;
+  static String displayCode(String code) {
+    final c = canonical(code);
+    return c.length == 4 ? '${c.substring(0, 3)}.${c.substring(3)}' : c;
+  }
+}

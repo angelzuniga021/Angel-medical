@@ -46,6 +46,7 @@ jobs:
           flutter test
           python checks/check_migration.py
           python checks/check_nom_migration.py
+          python checks/check_catalog_bootstrap.py
       - name: Compilar APK
         run: flutter build apk --release --dart-define=COMMUNITY_EDITION=$ANGEL_COMMUNITY --build-number=$((1000 + ${{ github.run_number }}))
       - name: Preparar descarga

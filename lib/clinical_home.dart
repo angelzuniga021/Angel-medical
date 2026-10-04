@@ -1,3 +1,4 @@
+import 'clinical_cie_screen.dart';
 import 'clinical_nom_settings.dart';
 import 'services.dart';
 
@@ -101,14 +102,15 @@ class _ClinicalHomeState extends State<ClinicalHome> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF174B82), Color(0xFF123246)],
+                  begin: Alignment.topLeft, end: Alignment.bottomRight,
+                  colors: [Color(0xFF174B82), Color(0xFF102638)],
                 ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Tu consulta, organizada.',
+                    'Tu día clínico,\nbajo control.',
                     style: TextStyle(
                       fontSize: 27,
                       fontWeight: FontWeight.w800,
@@ -117,7 +119,7 @@ class _ClinicalHomeState extends State<ClinicalHome> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Expedientes · Seguimiento · Continuidad de la atención',
+                    'Ángel Medical · Atención con continuidad',
                     style: TextStyle(color: Colors.white70),
                   ),
                   const SizedBox(height: 18),
@@ -193,10 +195,15 @@ class _ClinicalHomeState extends State<ClinicalHome> {
                       : '$catalogCount diagnósticos disponibles',
                 ),
                 subtitle: const Text(
-                  'Importa un catálogo verificado en XLSX con CATALOG_KEY, NOMBRE y LETRA opcional. No se generan códigos automáticamente.',
+                  'Busca por nombre o código, guarda favoritos y consulta sin conexión.',
                 ),
-                trailing: const Icon(Icons.upload_file),
-                onTap: () async {
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => route(const ClinicalCieScreen()),
+              ),
+              TextButton.icon(
+                icon: const Icon(Icons.upload_file_outlined),
+                label: const Text('Importar catálogo adicional XLSX'),
+                onPressed: () async {
                   try {
                     final count = await CieImporter.importXlsx();
                     if (mounted && count > 0)
@@ -462,7 +469,7 @@ class _ClinicalToolsState extends State<ClinicalTools> {
             ),
         ]),
         const ListTile(
-          title: Text('Angel Medical 2.5.0'),
+          title: Text('Angel Medical 2.6.0'),
           subtitle: Text(
             'Uso local · Expediente cifrado · Sincronización entre dispositivos no incluida',
           ),

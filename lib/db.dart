@@ -1,3 +1,4 @@
+import 'clinical_catalog.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -502,18 +503,21 @@ class AppDb {
     return out;
   }
 
-  Future<List<Map<String, Object?>>> searchCie(String q) async {
+  Future<List<Map<String, Object?>>> searchCie(String q, {bool favoritesOnly = false}) async {
     final db = await database;
-    q = q.trim().toUpperCase();
-    if (q.length < 2) return [];
+    q = normalizeCatalogText(q);
+    if (q.length < 2 && !favoritesOnly) return [];
     final like = '%$q%';
-    return db.query(
-      'cie10',
-      where: 'code LIKE ? OR search_text LIKE ?',
-      whereArgs: [like, like],
-      orderBy: 'favorite DESC,code',
-      limit: 50,
-    );
+    final codeLike = '%${BundledCie.canonical(q)}%';
+    final rows = await db.query('cie10',
+      where: "(REPLACE(code,'.','') LIKE ? OR search_text LIKE ?)${favoritesOnly ? ' AND favorite=1' : ''}",
+      whereArgs: [codeLike, like], orderBy: 'favorite DESC,code');
+    // Filter retired reference codes, including dotted aliases from imports.
+    final seen = <String>{};
+    return rows.where((r) {
+      final code = '${r['code']}';
+      return BundledCie.selectable(code) && seen.add(BundledCie.canonical(code));
+    }).take(100).toList();
   }
 
   Future<List<Map<String, Object?>>> searchMedications(String q) async {

@@ -1,0 +1,10 @@
+{
+  "source": "Catálogo y diccionario proporcionados por el usuario",
+  "reference_url": "https://www.datos.gob.mx/dataset/catalogo_cie_10",
+  "imported_at": "2026-10-04",
+  "csv_sha256": "25c795273d34a975570ded7b534d43d5f2a3e4c08835d1ea78d842df800a847e",
+  "asset_sha256": "c50b8d8963e7810150c4846aa6745e3266ba29de308103acbd34aee76588b9e7",
+  "total": 14497,
+  "active": 12551,
+  "note": "Se conserva CATALOG_KEY original. Fecha de edición no declarada en los archivos; no se presupone edición 2026."
+}

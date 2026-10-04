@@ -411,7 +411,8 @@ class _ShellState extends State<Shell> {
                 );
                 setState(() {});
               },
-              child: const Icon(Icons.add),
+              tooltip: 'Agregar paciente',
+              child: const Icon(Icons.person_add_alt_1),
             )
           : null,
       bottomNavigationBar: wide
