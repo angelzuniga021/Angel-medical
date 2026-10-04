@@ -12,7 +12,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       await tester.pumpWidget(MaterialApp(theme: clinicalTheme(brightness), home: const ClinicalCieScreen(), builder: (context, child) => MediaQuery(data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1.5)), child: child!)));
       await tester.pump();
-      await tester.scrollUntilVisible(find.text('Busca por nombre o código'), 200, scrollable: find.byType(Scrollable).last);
+      await tester.scrollUntilVisible(find.text('Busca por nombre o código'), 200, scrollable: find.byType(Scrollable).first);
       expect(find.text('Busca por nombre o código'), findsOneWidget);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
