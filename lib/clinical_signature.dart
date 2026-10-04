@@ -66,7 +66,9 @@ class ClinicalSignatureService {
       if (!context.mounted) return null;
       final accepted = await clinicalConfirm(context, 'Firmar versión actual', 'Firmante: ${parsed.name}\nRFC: ${parsed.rfc}\n\nLa firma se realiza hoy sobre esta versión; no cambia la fecha ni el autor original de la atención. Se verificará integridad, correspondencia de la clave y fechas. La confianza de la cadena SAT, la revocación y el sello de tiempo confiable no se verifican. Seleccionarás la .key cifrada y su contraseña, que no se guardarán en el expediente.');
       if (!accepted || !context.mounted) return null;
+      stage = 'Leer clave cifrada';
       key = await pick('key'); if (key == null || !context.mounted) return null;
+      stage = 'Solicitar contraseña';
       password = await showDialog<String>(context: context, builder: (_) => const ClinicalSignaturePassword());
       if (password == null || !context.mounted) return null;
       stage = 'Generar PDF';

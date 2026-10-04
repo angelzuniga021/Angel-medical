@@ -41,9 +41,9 @@ class _ClinicalSignaturePanelState extends State<ClinicalSignaturePanel> {
     if (busy) return;
     setState(() => busy = true);
     try {
-      await ClinicalSignatureService.sign(context, table: widget.table, patient: widget.patient, record: widget.record, title: widget.title);
+      final created = await ClinicalSignatureService.sign(context, table: widget.table, patient: widget.patient, record: widget.record, title: widget.title);
       await load();
-      if (mounted && error == null && signatures.any((p) => p['record_sha256'] == clinicalRecordHash(widget.record))) clinicalMessage(context, 'Firma guardada y verificada. Puedes exportar el PDF con su firma.');
+      if (created != null && mounted && error == null && signatures.any((p) => p['record_sha256'] == clinicalRecordHash(widget.record))) clinicalMessage(context, 'Firma guardada y verificada. Puedes exportar el PDF con su firma.');
     } catch (e) {
       await load();
       if (mounted) clinicalMessage(context, e is ClinicalSignatureFailure ? e.message : e is FormatException ? e.message : 'No se completó el proceso de firma. Código: PANEL_FAILURE. Las firmas anteriores se conservan.');
