@@ -21,7 +21,7 @@ void main(){
  });
  for(final brightness in Brightness.values){
   testWidgets('Long scale criteria readable in narrow large-text $brightness',(tester)async{
-   tester.view.physicalSize=const Size(320,750,scrollable:find.byType(Scrollable).first);tester.view.devicePixelRatio=1;addTearDown(tester.view.resetPhysicalSize);addTearDown(tester.view.resetDevicePixelRatio);
+   tester.view.physicalSize=const Size(320,750);tester.view.devicePixelRatio=1;addTearDown(tester.view.resetPhysicalSize);addTearDown(tester.view.resetDevicePixelRatio);
    await tester.pumpWidget(MaterialApp(theme:clinicalTheme(brightness),builder:(ctx,child)=>MediaQuery(data:MediaQuery.of(ctx).copyWith(textScaler:const TextScaler.linear(1.5)),child:child!),home:ScaleAssessment(tool:tools.singleWhere((t)=>t.id=='sofa'))));
    await tester.scrollUntilVisible(find.text('Calcular'),200,scrollable:find.byType(Scrollable).first);await tester.pump();expect(tester.takeException(),isNull);
   });
