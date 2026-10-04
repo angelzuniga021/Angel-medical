@@ -10,6 +10,8 @@ Future<int> saveClinicalScale(Database db, {required int pid, required ClinicalS
   return db.transaction((tx) async {
     final patients=await tx.query('patients',where:'id=?',whereArgs:[pid]);
     if(patients.length!=1) throw const FormatException('Paciente no encontrado.');
+    final dob=DateTime.tryParse('${patients.single['dob']??''}');
+    if(dob!=null && evaluatedAt.isBefore(dob)) throw const FormatException('La evaluación no puede ser anterior al nacimiento.');
     final settings=await tx.query('app_settings',where:'setting_key=?',whereArgs:['nom_profile']);
     final raw=settings.isEmpty?<String,dynamic>{}:decodeNom(settings.single['setting_value']);
     if('${raw['doctor']??''}'.trim().isEmpty || '${raw['license']??''}'.trim().isEmpty) throw const FormatException('Completa nombre y cédula del médico.');

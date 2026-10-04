@@ -673,13 +673,13 @@
     },
     {
       "id": "perc",
-      "name": "PERC · criterios positivos",
+      "name": "PERC · validación 2008",
       "area": "Trombosis",
       "version": "1.0",
       "reviewed": "2026-10-04",
       "population": "Adultos con sospecha clínica BAJA de TEP (<15%), establecida previamente por el médico. No embarazo.",
       "limitations": "Solo es interpretable en probabilidad preprueba baja. Un criterio positivo no diagnostica TEP; cero no permite descartar fuera de la población indicada.",
-      "source": "https://www.nice.org.uk/guidance/ng158/chapter/Recommendations",
+      "source": "https://pubmed.ncbi.nlm.nih.gov/18318689/",
       "formula": "sum",
       "unit": "puntos",
       "fields": [
@@ -755,7 +755,7 @@
         },
         {
           "key": "surgery",
-          "label": "Cirugía o trauma en ≤4 semanas",
+          "label": "Cirugía o trauma que requirió hospitalización en ≤4 semanas",
           "options": [
             {
               "label": "No",
@@ -908,14 +908,14 @@
       "version": "1.0",
       "reviewed": "2026-10-04",
       "population": "Adultos; confirmar la indicación y contexto clínico.",
-      "limitations": "Riesgo tromboembólico en fibrilación auricular. Versión sin sexo; confirmar definiciones de la guía. No prescribe anticoagulación automáticamente.",
+      "limitations": "Fibrilación auricular: definiciones ESC 2024. Versión sin sexo; distinta del modelo clásico. No prescribe anticoagulación automáticamente.",
       "source": "https://www.escardio.org/guidelines/clinical-practice-guidelines/all-esc-practice-guidelines/atrial-fibrillation/",
       "formula": "sum",
       "unit": "puntos",
       "fields": [
         {
           "key": "hf",
-          "label": "Insuficiencia cardiaca / disfunción ventricular",
+          "label": "Insuficiencia cardiaca con signos/síntomas (cualquier FEVI), o FEVI ≤40% aun sin síntomas",
           "options": [
             {
               "label": "No",
@@ -929,7 +929,7 @@
         },
         {
           "key": "htn",
-          "label": "Hipertensión",
+          "label": "HTA: PA en reposo >140/90 mmHg en ≥2 ocasiones o tratamiento antihipertensivo",
           "options": [
             {
               "label": "No",
@@ -989,7 +989,7 @@
         },
         {
           "key": "vascular",
-          "label": "Enfermedad vascular (IAM, arterial periférica o placa aórtica)",
+          "label": "Coronariopatía (IAM, angina, revascularización o lesión significativa por imagen), o enfermedad vascular periférica (claudicación, revascularización/intervención aórtica), o placa aórtica compleja (móvil, ulcerada, pediculada o ≥4 mm)",
           "options": [
             {
               "label": "No",

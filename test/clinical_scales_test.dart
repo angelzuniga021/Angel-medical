@@ -23,6 +23,12 @@ void main(){
    }
   });
  }
+ test('Version-specific clinical definitions remain explicit',(){
+   expect(t('cha_va').fields.singleWhere((f)=>f.key=='vascular').label,contains('angina'));
+   expect(t('cha_va').fields.singleWhere((f)=>f.key=='hf').label,contains('FEVI ≤40%'));
+   expect(t('perc').fields.singleWhere((f)=>f.key=='surgery').label,contains('hospitalización'));
+   expect(t('perc').source,contains('18318689'));
+ });
  test('Published ranges and negative weighted criteria',(){
    const maxima={'gcs':15,'curb65':5,'crb65':4,'qsofa':3,'sirs':4,'wells_pe':12.5,'wells_dvt':9,'perc':8,'heart':10,'cha_va':8,'cha_vasc':9,'hasbled':9,'centor':4,'mcisaac':5,'alvarado':10,'padua':20,'gbs':23,'sofa':24};
    for(final e in maxima.entries){final tool=t(e.key);final input={for(final f in tool.fields)f.key:'${f.options.map((o)=>(o['value'] as num).toDouble()).reduce(math.max)}'};expect(tool.calculate(input),e.value,reason:e.key);}
