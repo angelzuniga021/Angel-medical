@@ -24,7 +24,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart'
-    show ConflictAlgorithm, openDatabase;
+    show openDatabase;
 
 import 'db.dart';
 import 'clinical_nom.dart';
@@ -771,17 +771,6 @@ class PdfService {
     } catch (_) {
       return null;
     }
-  }
-
-  static String _vital(
-    Map<String, Object?>? v,
-    String key, {
-    int decimals = 0,
-  }) {
-    final value = v?[key];
-    if (value == null) return '';
-    if (value is num) return value.toStringAsFixed(decimals);
-    return '$value';
   }
 
   static Future<void> printPrescription({
