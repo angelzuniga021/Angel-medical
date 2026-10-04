@@ -83,7 +83,7 @@ class BackupService {
         if (!RegExp(r'^[a-z_]+$').hasMatch(name)) throw const FormatException('Tabla no reconocida.');
         data[name] = (await tx.query(name)).map(exchangeRow).toList();
       }
-      return {'format': 'angel-medical-logical-snapshot', 'version': 1, 'app_version': '2.9.1', 'database_uuid': databaseId, 'schema_version': (await tx.rawQuery('PRAGMA user_version')).single['user_version'], 'created_at': DateTime.now().toUtc().toIso8601String(), 'blob_encoding': r'base64/$binary', 'tables': data};
+      return {'format': 'angel-medical-logical-snapshot', 'version': 1, 'app_version': '2.9.2', 'database_uuid': databaseId, 'schema_version': (await tx.rawQuery('PRAGMA user_version')).single['user_version'], 'created_at': DateTime.now().toUtc().toIso8601String(), 'blob_encoding': r'base64/$binary', 'tables': data};
     });
     final salt = List<int>.generate(16, (_) => Random.secure().nextInt(256));
     final encrypted = await _cipher.encrypt(utf8.encode(jsonEncode(snapshot)), secretKey: await _derive(password, salt));

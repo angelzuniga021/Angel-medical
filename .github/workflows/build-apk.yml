@@ -58,6 +58,7 @@ jobs:
           pdftoppm -scale-to 1100 -png recipe-fixture/long.pdf recipe-fixture/long
       - name: Verificar firma nativa e interoperabilidad CMS
         env:
+          ANGEL_PDF_FIXTURE_DIR: ${{ github.workspace }}/recipe-fixture
           ANGEL_FIXTURE_DIR: ${{ github.workspace }}/native-fixture
         run: |
           cd android
@@ -68,6 +69,11 @@ jobs:
           if openssl cms -verify -binary -inform DER -in native-fixture/document.p7s -content native-fixture/altered.txt -noverify -out /dev/null 2>/dev/null; then
             exit 1
           fi
+      - name: Verificar CMS Android integrado al PDF
+        run: |
+          flutter test test/clinical_native_pdf_test.dart --dart-define=NATIVE_PDF_FIXTURE=true
+          pdfsig recipe-fixture/native-signed.pdf | grep "Signature is Valid"
+          pdftoppm -scale-to 1100 -png recipe-fixture/native-signed.pdf recipe-fixture/native-signed
       - name: Compilar APK
         run: flutter build apk --release --dart-define=COMMUNITY_EDITION=$ANGEL_COMMUNITY --build-number=$((1000 + ${{ github.run_number }}))
       - name: Revisar proveedores de firma en APK optimizada

@@ -40,6 +40,9 @@ void main() {
       });
       expect(calls, 1);
       expect(embeddedPdfParts(pdf).cms, [0x30, 0]);
+      Directory('recipe-fixture').createSync();
+      File('recipe-fixture/prepared.pdf').writeAsBytesSync(pdf);
+      File('recipe-fixture/prepared-data.bin').writeAsBytesSync(embeddedPdfParts(pdf).data);
     } finally {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(channel, null);
     }

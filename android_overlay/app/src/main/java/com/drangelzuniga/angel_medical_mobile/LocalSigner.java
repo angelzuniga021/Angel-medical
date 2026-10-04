@@ -51,7 +51,7 @@ public final class LocalSigner {
       CMSSignedDataGenerator generator = new CMSSignedDataGenerator();
       generator.addSignerInfoGenerator(new JcaSignerInfoGeneratorBuilder(new JcaDigestCalculatorProviderBuilder().setProvider(PROVIDER).build()).build(new JcaContentSignerBuilder("SHA256withRSA").setProvider(PROVIDER).build(key), cert));
       generator.addCertificates(new JcaCertStore(Collections.singletonList(cert)));
-      byte[] cms = generator.generate(new CMSProcessableByteArray(data), false).getEncoded();
+      byte[] cms = generator.generate(new CMSProcessableByteArray(data), false).toASN1Structure().getEncoded(org.bouncycastle.asn1.ASN1Encoding.DER);
       // A mismatched certificate/key must not be saved as a successful signature.
       Map<String,Object> result;
       try { result = verify(data, cms); }
