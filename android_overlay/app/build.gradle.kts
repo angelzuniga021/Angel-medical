@@ -12,6 +12,9 @@ android {
     packaging {
         // JVM OSGi metadata is duplicated across BC jars and is unused by Android.
         resources.excludes.add("META-INF/versions/**/OSGI-INF/MANIFEST.MF")
+        // Preserve library licenses/notices while combining duplicate paths.
+        resources.merges.add("META-INF/LICENSE*")
+        resources.merges.add("META-INF/NOTICE*")
     }
 
     compileOptions {
