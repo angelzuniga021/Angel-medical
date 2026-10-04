@@ -1,3 +1,4 @@
+import 'clinical_scales_screen.dart';
 import 'clinical_body_map.dart';
 import 'clinical_body_data.dart';
 import 'clinical_note_review.dart';
@@ -375,6 +376,17 @@ class _ClinicalEditorState extends State<ClinicalEditor>
     }
   }
 
+  Future<void> addScale() async {
+    final text = await Navigator.push<String>(context, MaterialPageRoute(builder: (_) => ClinicalScalesScreen(patient: widget.patient, selectForNote: true)));
+    if (text == null || !mounted) return;
+    final candidates = ['objective', 'assessment', 'physical_exam', 'evolution', 'plan', 'other', 'content'].where((k) => fields.containsKey(k) && noteFields[widget.table]!.contains(k)).toList();
+    final target = await showDialog<String>(context: context, builder: (ctx) => SimpleDialog(title: const Text('Agregar evaluación a'), children: [for (final key in candidates) SimpleDialogOption(onPressed: () => Navigator.pop(ctx, key), child: Text(clinicalLabels[key] ?? key))]));
+    if (target == null || !mounted) return;
+    final c = fields[target]!;
+    c.text = '${c.text.trim()}\n\n$text'.trim();
+    clinicalMessage(context, 'Evaluación agregada al borrador. Revisa y guarda la nota.');
+  }
+
   Future<void> discard() async {
     if (busy ||
         !await clinicalConfirm(
@@ -592,10 +604,13 @@ class _ClinicalEditorState extends State<ClinicalEditor>
             PopupMenuButton<String>(
               enabled: ready && !busy,
               onSelected: (v) {
+                if (v == 'scale') addScale();
                 if (v == 'template') saveTemplate();
                 if (v == 'discard') discard();
               },
               itemBuilder: (_) => [
+                if (!(widget.table == 'documents' && (fields['type']?.text == 'Receta' || widget.documentType == 'Receta')))
+                  const PopupMenuItem(value: 'scale', child: Text('Agregar escala clínica')),
                 const PopupMenuItem(
                   value: 'template',
                   child: Text('Guardar como plantilla'),

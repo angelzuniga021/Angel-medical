@@ -46,6 +46,7 @@ jobs:
           flutter test
           python checks/check_migration.py
           python checks/check_nom_migration.py
+          python checks/check_scales_migration.py
           python checks/check_catalog_bootstrap.py
       - name: Revisar recetas PDF
         run: |

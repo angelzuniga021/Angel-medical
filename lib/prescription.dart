@@ -314,7 +314,8 @@ class _PrescriptionFormState extends State<PrescriptionForm> {
                             child: TextField(
                               controller: m.dose,
                               decoration: const InputDecoration(
-                                labelText: 'Dosis',
+                                labelText: 'Dosis con unidad',
+                                hintText: 'Ej. 1 tableta, 5 mL o 500 mg',
                               ),
                             ),
                           ),
@@ -357,6 +358,7 @@ class _PrescriptionFormState extends State<PrescriptionForm> {
                               controller: m.frequency,
                               decoration: const InputDecoration(
                                 labelText: 'Frecuencia',
+                                hintText: 'Ej. 8 horas; revisar indicación completa',
                                 hintText: '8 horas',
                               ),
                             ),

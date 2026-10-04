@@ -60,7 +60,7 @@ class AppDb {
         final version =
             (await check.rawQuery('PRAGMA user_version')).single['user_version']
                 as int;
-        if (version < 6) {
+        if (version < 7) {
           final integrity = await check.rawQuery('PRAGMA integrity_check');
           if (integrity.length != 1 || integrity.first.values.first != 'ok') {
             throw StateError(
@@ -75,7 +75,7 @@ class AppDb {
           }
           await check.close();
           await File(p)
-              .copy('$p.pre_v6_${DateTime.now().microsecondsSinceEpoch}');
+              .copy('$p.pre_v7_${DateTime.now().microsecondsSinceEpoch}');
         }
       } finally {
         if (check.isOpen) await check.close();
@@ -84,7 +84,7 @@ class AppDb {
     _db = await openDatabase(
       p,
       password: key,
-      version: 6,
+      version: 7,
       onConfigure: (db) async => db.execute('PRAGMA foreign_keys=ON'),
       onCreate: (db, version) async {
         for (final sql in [..._schema, ...clinicalSchema]) {
@@ -204,6 +204,21 @@ class AppDb {
                   'ok' ||
               (await db.rawQuery('PRAGMA foreign_key_check')).isNotEmpty) {
             throw StateError('Migración NOM: integridad incorrecta');
+          }
+        }
+        if (oldVersion < 7) {
+          final before = <String, int>{};
+          for (final table in ['patients', ...nomTables, 'clinical_attachments']) {
+            before[table] = (await db.rawQuery('SELECT COUNT(*) AS n FROM $table')).single['n'] as int;
+          }
+          for (final sql in clinicalSchema) { await db.execute(sql); }
+          for (final table in before.keys) {
+            if ((await db.rawQuery('SELECT COUNT(*) AS n FROM $table')).single['n'] != before[table]) {
+              throw StateError('Migración de escalas: registros modificados');
+            }
+          }
+          if ((await db.rawQuery('PRAGMA integrity_check')).single.values.first != 'ok' || (await db.rawQuery('PRAGMA foreign_key_check')).isNotEmpty) {
+            throw StateError('Migración de escalas: integridad incorrecta');
           }
         }
       },

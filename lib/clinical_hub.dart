@@ -1,3 +1,4 @@
+import 'clinical_scales_screen.dart';
 import 'clinical_patient_design.dart';
 import 'package:flutter/material.dart';
 
@@ -124,6 +125,10 @@ class _ModernPatientHubState extends State<ModernPatientHub> {
     spacing: 8,
     runSpacing: 8,
     children: [
+      OutlinedButton.icon(
+        onPressed: () => route(ClinicalScalesScreen(patient: patient!)),
+        icon: const Icon(Icons.calculate_outlined), label: const Text('Escalas'),
+      ),
       FilledButton.icon(
         onPressed: () =>
             route(ClinicalEditor(patient: patient!, table: 'consultations')),

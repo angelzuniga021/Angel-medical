@@ -1,0 +1,2293 @@
+{
+  "version": 1,
+  "tools": [
+    {
+      "id": "pain",
+      "name": "Dolor · escala numérica 0–10",
+      "area": "Dolor y neurología",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Persona capaz de comunicar y comprender la puntuación.",
+      "limitations": "Escala numérica; no es EVA gráfica. Registrar localización y contexto en observaciones. Los cortes de intensidad son descriptivos; interpretar cambios según contexto.",
+      "source": "https://pubmed.ncbi.nlm.nih.gov/11690728/",
+      "formula": "sum",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "pain",
+          "label": "Intensidad referida (0 = sin dolor; 10 = máximo imaginable)",
+          "min": 0,
+          "max": 10
+        }
+      ]
+    },
+    {
+      "id": "gcs",
+      "name": "Glasgow · componentes E/V/M",
+      "area": "Dolor y neurología",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "Sedación, intubación, barreras lingüísticas o lesiones pueden impedir la evaluación. Si un componente no es evaluable no se calcula un total.",
+      "source": "https://www.glasgowcomascale.org/",
+      "formula": "sum",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "eye",
+          "label": "Respuesta ocular",
+          "options": [
+            {
+              "label": "Espontánea",
+              "value": 4
+            },
+            {
+              "label": "Al sonido",
+              "value": 3
+            },
+            {
+              "label": "A la presión",
+              "value": 2
+            },
+            {
+              "label": "Ninguna",
+              "value": 1
+            },
+            {
+              "label": "No evaluable",
+              "value": -1
+            }
+          ]
+        },
+        {
+          "key": "verbal",
+          "label": "Respuesta verbal",
+          "options": [
+            {
+              "label": "Orientada",
+              "value": 5
+            },
+            {
+              "label": "Confusa",
+              "value": 4
+            },
+            {
+              "label": "Palabras",
+              "value": 3
+            },
+            {
+              "label": "Sonidos",
+              "value": 2
+            },
+            {
+              "label": "Ninguna",
+              "value": 1
+            },
+            {
+              "label": "No evaluable / intubación",
+              "value": -1
+            }
+          ]
+        },
+        {
+          "key": "motor",
+          "label": "Respuesta motora",
+          "options": [
+            {
+              "label": "Obedece órdenes",
+              "value": 6
+            },
+            {
+              "label": "Localiza",
+              "value": 5
+            },
+            {
+              "label": "Flexión normal",
+              "value": 4
+            },
+            {
+              "label": "Flexión anormal",
+              "value": 3
+            },
+            {
+              "label": "Extensión",
+              "value": 2
+            },
+            {
+              "label": "Ninguna",
+              "value": 1
+            },
+            {
+              "label": "No evaluable",
+              "value": -1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "curb65",
+      "name": "CURB-65",
+      "area": "Respiratorio",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "Neumonía adquirida en la comunidad en adultos. Urea y BUN son analitos distintos; verificar unidades. No sustituye la evaluación de hipoxemia o inestabilidad.",
+      "source": "https://www.nice.org.uk/guidance/ng250/chapter/Recommendations",
+      "formula": "sum",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "confusion",
+          "label": "Confusión nueva / AMT ≤8",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "rr",
+          "label": "Frecuencia respiratoria ≥30/min",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "bp",
+          "label": "PAS <90 mmHg o PAD ≤60 mmHg",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "age",
+          "label": "Edad ≥65 años",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "urea",
+          "label": "Urea >7 mmol/L (≈42 mg/dL de urea; ≈19.6 mg/dL de BUN)",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "crb65",
+      "name": "CRB-65",
+      "area": "Respiratorio",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "Neumonía adquirida en la comunidad en adultos, sin urea disponible. No usar como criterio aislado de alta.",
+      "source": "https://www.nice.org.uk/guidance/ng250/chapter/Recommendations",
+      "formula": "sum",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "confusion",
+          "label": "Confusión nueva / AMT ≤8",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "rr",
+          "label": "Frecuencia respiratoria ≥30/min",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "bp",
+          "label": "PAS <90 mmHg o PAD ≤60 mmHg",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "age",
+          "label": "Edad ≥65 años",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "qsofa",
+      "name": "qSOFA",
+      "area": "Urgencias",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "Adultos con sospecha de infección. No es definición de sepsis ni prueba para descartarla; no utilizar como único tamizaje.",
+      "source": "https://jamanetwork.com/journals/jama/fullarticle/2492881",
+      "formula": "sum",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "rr",
+          "label": "Frecuencia respiratoria ≥22/min",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "bp",
+          "label": "PAS ≤100 mmHg",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "mental",
+          "label": "Alteración del estado mental",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sirs",
+      "name": "SIRS · criterios históricos",
+      "area": "Urgencias",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "Respuesta inflamatoria inespecífica. Criterios históricos; no equivalen al diagnóstico actual de sepsis.",
+      "source": "https://jamanetwork.com/journals/jama/fullarticle/2492881",
+      "formula": "sum",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "temp",
+          "label": "Temperatura >38 °C o <36 °C",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "hr",
+          "label": "FC >90/min",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "resp",
+          "label": "FR >20/min o PaCO₂ <32 mmHg",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "wbc",
+          "label": "Leucocitos >12,000/µL, <4,000/µL o bandas >10%",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wells_pe",
+      "name": "Wells · TEP (dos niveles)",
+      "area": "Trombosis",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "Probabilidad preprueba en adultos con sospecha de TEP. No confirma ni descarta TEP por sí sola. Embarazo requiere un algoritmo específico.",
+      "source": "https://www.nice.org.uk/guidance/ng158/chapter/Recommendations",
+      "formula": "sum",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "dvt",
+          "label": "Signos clínicos de TVP (edema y dolor venoso profundo)",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "alternative",
+          "label": "TEP más probable que otro diagnóstico",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "hr",
+          "label": "FC >100/min",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1.5
+            }
+          ]
+        },
+        {
+          "key": "immob",
+          "label": "Inmovilización ≥3 días o cirugía en las últimas 4 semanas",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1.5
+            }
+          ]
+        },
+        {
+          "key": "prior",
+          "label": "TVP o TEP previo",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1.5
+            }
+          ]
+        },
+        {
+          "key": "blood",
+          "label": "Hemoptisis",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "cancer",
+          "label": "Cáncer en tratamiento, tratado ≤6 meses o paliativo",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wells_dvt",
+      "name": "Wells · TVP (dos niveles)",
+      "area": "Trombosis",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "Adultos con sospecha de TVP. Versión de dos niveles. No sustituye dímero D / ultrasonido ni valoración clínica.",
+      "source": "https://www.nice.org.uk/guidance/ng158/chapter/Recommendations",
+      "formula": "sum",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "cancer",
+          "label": "Cáncer activo (tratamiento ≤6 meses o paliativo)",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "paralysis",
+          "label": "Parálisis, paresia o inmovilización con yeso de extremidad inferior",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "bed",
+          "label": "Encamamiento ≥3 días o cirugía mayor en ≤12 semanas con anestesia general/regional",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "tender",
+          "label": "Dolor localizado en trayecto venoso profundo",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "leg",
+          "label": "Edema de toda la pierna",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "calf",
+          "label": "Pantorrilla ≥3 cm mayor (10 cm bajo tuberosidad tibial)",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "pitting",
+          "label": "Edema con fóvea limitado a pierna sintomática",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "collateral",
+          "label": "Venas superficiales colaterales no varicosas",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "prior",
+          "label": "TVP previa",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "alternative",
+          "label": "Diagnóstico alternativo al menos tan probable como TVP",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": -2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "perc",
+      "name": "PERC · criterios positivos",
+      "area": "Trombosis",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos con sospecha clínica BAJA de TEP (<15%), establecida previamente por el médico. No embarazo.",
+      "limitations": "Solo es interpretable en probabilidad preprueba baja. Un criterio positivo no diagnostica TEP; cero no permite descartar fuera de la población indicada.",
+      "source": "https://www.nice.org.uk/guidance/ng158/chapter/Recommendations",
+      "formula": "sum",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "age",
+          "label": "Edad ≥50 años",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "hr",
+          "label": "FC ≥100/min",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "sat",
+          "label": "SpO₂ <95%",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "leg",
+          "label": "Edema unilateral de pierna",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "blood",
+          "label": "Hemoptisis",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "surgery",
+          "label": "Cirugía o trauma en ≤4 semanas",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "prior",
+          "label": "TVP/TEP previo",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "estrogen",
+          "label": "Uso de estrógenos",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "heart",
+      "name": "HEART · original",
+      "area": "Cardiovascular",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "Adultos con dolor torácico, ECG y troponina disponibles. No aplicar para retrasar atención de STEMI. No es HEART Pathway; no sustituye troponinas seriadas ni algoritmos de alta sensibilidad.",
+      "source": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2442661/",
+      "formula": "sum",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "history",
+          "label": "Historia de dolor torácico",
+          "options": [
+            {
+              "label": "Poco sospechosa",
+              "value": 0
+            },
+            {
+              "label": "Moderadamente sospechosa",
+              "value": 1
+            },
+            {
+              "label": "Muy sospechosa",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "ecg",
+          "label": "ECG",
+          "options": [
+            {
+              "label": "Normal",
+              "value": 0
+            },
+            {
+              "label": "Alteraciones inespecíficas de repolarización",
+              "value": 1
+            },
+            {
+              "label": "Depresión significativa de ST",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "age",
+          "label": "Edad",
+          "options": [
+            {
+              "label": "<45 años",
+              "value": 0
+            },
+            {
+              "label": "45–64 años",
+              "value": 1
+            },
+            {
+              "label": "≥65 años",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "risk",
+          "label": "Factores de riesgo (HTA, dislipidemia, DM, obesidad, tabaquismo, historia familiar)",
+          "options": [
+            {
+              "label": "Ninguno",
+              "value": 0
+            },
+            {
+              "label": "1–2 factores",
+              "value": 1
+            },
+            {
+              "label": "≥3 o enfermedad aterosclerótica conocida",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "troponin",
+          "label": "Troponina respecto al límite superior de referencia",
+          "options": [
+            {
+              "label": "≤1 vez",
+              "value": 0
+            },
+            {
+              "label": ">1 a ≤3 veces",
+              "value": 1
+            },
+            {
+              "label": ">3 veces",
+              "value": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cha_va",
+      "name": "CHA₂DS₂-VA · ESC 2024",
+      "area": "Cardiovascular",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "Riesgo tromboembólico en fibrilación auricular. Versión sin sexo; confirmar definiciones de la guía. No prescribe anticoagulación automáticamente.",
+      "source": "https://www.escardio.org/guidelines/clinical-practice-guidelines/all-esc-practice-guidelines/atrial-fibrillation/",
+      "formula": "sum",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "hf",
+          "label": "Insuficiencia cardiaca / disfunción ventricular",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "htn",
+          "label": "Hipertensión",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "age",
+          "label": "Edad",
+          "options": [
+            {
+              "label": "<65",
+              "value": 0
+            },
+            {
+              "label": "65–74",
+              "value": 1
+            },
+            {
+              "label": "≥75",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "dm",
+          "label": "Diabetes mellitus",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "stroke",
+          "label": "EVC, AIT o embolia sistémica previa",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "vascular",
+          "label": "Enfermedad vascular (IAM, arterial periférica o placa aórtica)",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cha_vasc",
+      "name": "CHA₂DS₂-VASc",
+      "area": "Cardiovascular",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "Versión clásica para fibrilación auricular; el sexo femenino es modificador de riesgo. No intercambiar sus umbrales con CHA₂DS₂-VA.",
+      "source": "https://pubmed.ncbi.nlm.nih.gov/19762550/",
+      "formula": "sum",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "hf",
+          "label": "Insuficiencia cardiaca / disfunción ventricular",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "htn",
+          "label": "Hipertensión",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "age",
+          "label": "Edad",
+          "options": [
+            {
+              "label": "<65",
+              "value": 0
+            },
+            {
+              "label": "65–74",
+              "value": 1
+            },
+            {
+              "label": "≥75",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "dm",
+          "label": "Diabetes mellitus",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "stroke",
+          "label": "EVC, AIT o embolia sistémica previa",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "vascular",
+          "label": "Enfermedad vascular (IAM, arterial periférica o placa aórtica)",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "female",
+          "label": "Sexo femenino",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hasbled",
+      "name": "HAS-BLED",
+      "area": "Cardiovascular",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "Fibrilación auricular. Un resultado elevado invita a revisar factores modificables; no es motivo aislado para negar anticoagulación. INR lábil solo aplica cuando corresponde.",
+      "source": "https://pubmed.ncbi.nlm.nih.gov/20299623/",
+      "formula": "sum",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "htn",
+          "label": "HTA no controlada (PAS >160 mmHg)",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "renal",
+          "label": "Diálisis, trasplante renal o creatinina ≥2.26 mg/dL",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "liver",
+          "label": "Cirrosis o bilirrubina >2× normal junto con AST/ALT/FA >3× normal",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "stroke",
+          "label": "EVC previo",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "bleeding",
+          "label": "Sangrado previo o predisposición (incluida anemia)",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "inr",
+          "label": "INR lábil (TTR <60% en antagonistas de vitamina K)",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "age",
+          "label": "Edad >65 años",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "drugs",
+          "label": "Antiagregantes o AINE",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "alcohol",
+          "label": "Alcohol ≥8 bebidas por semana",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "centor",
+      "name": "Centor",
+      "area": "Consulta general",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "Faringitis en adultos. Estratifica probabilidad; no diagnostica infección estreptocócica ni prescribe antibióticos.",
+      "source": "https://www.idsociety.org/practice-guideline/streptococcal-pharyngitis2/",
+      "formula": "sum",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "fever",
+          "label": "Temperatura >38 °C",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "tonsil",
+          "label": "Exudado o aumento de volumen amigdalar",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "nodes",
+          "label": "Adenopatías cervicales anteriores dolorosas",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "cough",
+          "label": "Ausencia de tos",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mcisaac",
+      "name": "McIsaac · Centor modificado",
+      "area": "Consulta general",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Faringitis en pacientes ≥3 años.",
+      "limitations": "No aplicar en menores de 3 años. No sustituye prueba microbiológica ni juicio clínico.",
+      "source": "https://www.idsociety.org/practice-guideline/streptococcal-pharyngitis2/",
+      "formula": "sum",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "fever",
+          "label": "Temperatura >38 °C",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "tonsil",
+          "label": "Exudado o aumento de volumen amigdalar",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "nodes",
+          "label": "Adenopatías cervicales anteriores dolorosas",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "cough",
+          "label": "Ausencia de tos",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "age",
+          "label": "Edad",
+          "options": [
+            {
+              "label": "3–14 años",
+              "value": 1
+            },
+            {
+              "label": "15–44 años",
+              "value": 0
+            },
+            {
+              "label": "≥45 años",
+              "value": -1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "alvarado",
+      "name": "Alvarado · original (10 puntos)",
+      "area": "Urgencias",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "Sospecha de apendicitis en adultos. No es versión modificada de 9 puntos; no descarta por sí sola apendicitis ni define cirugía.",
+      "source": "https://www.sciencedirect.com/science/article/pii/S0196064486809933",
+      "formula": "sum",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "migration",
+          "label": "Migración del dolor hacia FID",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "anorexia",
+          "label": "Anorexia / cetonuria",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "nausea",
+          "label": "Náusea o vómito",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "tender",
+          "label": "Dolor a la palpación en FID",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "rebound",
+          "label": "Rebote en FID",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "temp",
+          "label": "Temperatura oral ≥37.3 °C",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "wbc",
+          "label": "Leucocitos >10,000/µL",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "shift",
+          "label": "Desviación a la izquierda (>75% neutrófilos)",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "padua",
+      "name": "Padua · paciente médico hospitalizado",
+      "area": "Hospitalización",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "Adultos hospitalizados por enfermedad médica, no pacientes quirúrgicos. Evaluar riesgo hemorrágico antes de decidir profilaxis.",
+      "source": "https://pubmed.ncbi.nlm.nih.gov/20738765/",
+      "formula": "sum",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "cancer",
+          "label": "Cáncer activo",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "prior",
+          "label": "TEV previo (excluir trombosis superficial)",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "mobility",
+          "label": "Movilidad reducida: encamamiento previsto ≥3 días",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "thrombophilia",
+          "label": "Trombofilia conocida",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "trauma",
+          "label": "Trauma o cirugía en último mes",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "age",
+          "label": "Edad ≥70 años",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "failure",
+          "label": "Insuficiencia cardiaca y/o respiratoria",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "event",
+          "label": "IAM o EVC isquémico agudo",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "infection",
+          "label": "Infección aguda y/o enfermedad reumatológica",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "bmi",
+          "label": "IMC ≥30 kg/m²",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "hormone",
+          "label": "Tratamiento hormonal",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gbs",
+      "name": "Glasgow-Blatchford",
+      "area": "Urgencias",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "Adultos con hemorragia digestiva alta. Datos previos a intervención; confirmar analito/unidades y categoría de Hb. El puntaje no decide por sí solo alta ni transfusión.",
+      "source": "https://handbook.ggcmedicines.org.uk/guidelines/gastrointestinal-system/glasgow-blatchford-score/",
+      "formula": "sum",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "urea",
+          "label": "Urea (mmol/L; NO BUN)",
+          "options": [
+            {
+              "label": "<6.5",
+              "value": 0
+            },
+            {
+              "label": "6.5 a <8",
+              "value": 2
+            },
+            {
+              "label": "8 a <10",
+              "value": 3
+            },
+            {
+              "label": "10 a <25",
+              "value": 4
+            },
+            {
+              "label": "≥25",
+              "value": 6
+            }
+          ]
+        },
+        {
+          "key": "hb",
+          "label": "Hemoglobina (g/dL), según sexo de la tabla",
+          "options": [
+            {
+              "label": "Varón ≥13 / mujer ≥12",
+              "value": 0
+            },
+            {
+              "label": "Varón 12 a <13 / mujer 10 a <12",
+              "value": 1
+            },
+            {
+              "label": "Varón 10 a <12",
+              "value": 3
+            },
+            {
+              "label": "Cualquier sexo <10",
+              "value": 6
+            }
+          ]
+        },
+        {
+          "key": "bp",
+          "label": "PAS (mmHg)",
+          "options": [
+            {
+              "label": "≥110",
+              "value": 0
+            },
+            {
+              "label": "100–109",
+              "value": 1
+            },
+            {
+              "label": "90–99",
+              "value": 2
+            },
+            {
+              "label": "<90",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "hr",
+          "label": "FC ≥100/min",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "melena",
+          "label": "Melena",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "syncope",
+          "label": "Síncope",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "liver",
+          "label": "Enfermedad hepática",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "hf",
+          "label": "Insuficiencia cardiaca",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sofa",
+      "name": "SOFA · seis sistemas",
+      "area": "Hospitalización",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "Adultos; registrar peores valores del mismo periodo de 24 h. Total absoluto: no se calcula ΔSOFA ni se diagnostica sepsis sin basal/contexto. No asumir normalidad cuando falta un dato.",
+      "source": "https://jamanetwork.com/journals/jama/fullarticle/2492881",
+      "formula": "sum",
+      "unit": "puntos",
+      "fields": [
+        {
+          "key": "resp",
+          "label": "Respiratorio: PaO₂/FiO₂ (mmHg)",
+          "options": [
+            {
+              "label": "≥400",
+              "value": 0
+            },
+            {
+              "label": "300 a <400",
+              "value": 1
+            },
+            {
+              "label": "<300 sin cumplir categorías 3/4",
+              "value": 2
+            },
+            {
+              "label": "100 a <200 CON soporte respiratorio",
+              "value": 3
+            },
+            {
+              "label": "<100 CON soporte respiratorio",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "key": "platelets",
+          "label": "Plaquetas (×10³/µL)",
+          "options": [
+            {
+              "label": "≥150",
+              "value": 0
+            },
+            {
+              "label": "100 a <150",
+              "value": 1
+            },
+            {
+              "label": "50 a <100",
+              "value": 2
+            },
+            {
+              "label": "20 a <50",
+              "value": 3
+            },
+            {
+              "label": "<20",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "key": "bilirubin",
+          "label": "Bilirrubina (mg/dL)",
+          "options": [
+            {
+              "label": "<1.2",
+              "value": 0
+            },
+            {
+              "label": "1.2 a <2",
+              "value": 1
+            },
+            {
+              "label": "2 a <6",
+              "value": 2
+            },
+            {
+              "label": "6 a <12",
+              "value": 3
+            },
+            {
+              "label": "≥12",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "key": "cv",
+          "label": "Cardiovascular: peor criterio; vasopresores ≥1 h (µg/kg/min)",
+          "options": [
+            {
+              "label": "PAM ≥70, sin vasopresores",
+              "value": 0
+            },
+            {
+              "label": "PAM <70, sin vasopresores",
+              "value": 1
+            },
+            {
+              "label": "Dopamina ≤5 o dobutamina a cualquier dosis",
+              "value": 2
+            },
+            {
+              "label": "Dopamina >5 a ≤15 o adrenalina/noradrenalina ≤0.1",
+              "value": 3
+            },
+            {
+              "label": "Dopamina >15 o adrenalina/noradrenalina >0.1",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "key": "gcs",
+          "label": "Glasgow",
+          "options": [
+            {
+              "label": "15",
+              "value": 0
+            },
+            {
+              "label": "13–14",
+              "value": 1
+            },
+            {
+              "label": "10–12",
+              "value": 2
+            },
+            {
+              "label": "6–9",
+              "value": 3
+            },
+            {
+              "label": "<6",
+              "value": 4
+            }
+          ]
+        },
+        {
+          "key": "renal",
+          "label": "Renal: peor criterio de creatinina (mg/dL) O diuresis (mL/24 h)",
+          "options": [
+            {
+              "label": "Cr <1.2 y diuresis ≥500",
+              "value": 0
+            },
+            {
+              "label": "Cr 1.2 a <2 y diuresis ≥500",
+              "value": 1
+            },
+            {
+              "label": "Cr 2 a <3.5 y diuresis ≥500",
+              "value": 2
+            },
+            {
+              "label": "Cr 3.5 a <5 O diuresis 200 a <500",
+              "value": 3
+            },
+            {
+              "label": "Cr ≥5 O diuresis <200",
+              "value": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bmi",
+      "name": "IMC",
+      "area": "Calculadoras",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "Adultos no gestantes; no distingue composición corporal. Edema y cambios de volumen afectan el peso.",
+      "source": "https://www.who.int/news-room/fact-sheets/detail/obesity-and-overweight",
+      "formula": "bmi",
+      "unit": "kg/m²",
+      "fields": [
+        {
+          "key": "weight",
+          "label": "Peso para cálculo (kg)",
+          "min": 1,
+          "max": 500
+        },
+        {
+          "key": "height",
+          "label": "Talla (cm)",
+          "min": 30,
+          "max": 260
+        }
+      ]
+    },
+    {
+      "id": "map",
+      "name": "Presión arterial media · estimada",
+      "area": "Calculadoras",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "Aproximación (PAS + 2×PAD)/3; no sustituye medición invasiva.",
+      "source": "https://www.ncbi.nlm.nih.gov/books/NBK538226/",
+      "formula": "map",
+      "unit": "mmHg",
+      "fields": [
+        {
+          "key": "sbp",
+          "label": "PAS (mmHg)",
+          "min": 1,
+          "max": 350
+        },
+        {
+          "key": "dbp",
+          "label": "PAD (mmHg)",
+          "min": 1,
+          "max": 250
+        }
+      ]
+    },
+    {
+      "id": "shock",
+      "name": "Índice de choque",
+      "area": "Calculadoras",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "FC/PAS. Fármacos, arritmias, embarazo y edad modifican su interpretación; no descarta choque.",
+      "source": "https://pubmed.ncbi.nlm.nih.gov/8092595/",
+      "formula": "shock",
+      "unit": "",
+      "fields": [
+        {
+          "key": "hr",
+          "label": "FC (latidos/min)",
+          "min": 1,
+          "max": 300
+        },
+        {
+          "key": "sbp",
+          "label": "PAS (mmHg)",
+          "min": 1,
+          "max": 350
+        }
+      ]
+    },
+    {
+      "id": "ckdepi",
+      "name": "CKD-EPI · creatinina 2021",
+      "area": "Calculadoras",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "Adultos con creatinina estable, sin factor racial. No usar en lesión renal aguda ni como dosis farmacológica automática; resultado indexado a 1.73 m².",
+      "source": "https://www.kidney.org/ckd-epi-creatinine-equation-2021",
+      "formula": "ckdepi",
+      "unit": "mL/min/1.73 m²",
+      "fields": [
+        {
+          "key": "age",
+          "label": "Edad (años completos)",
+          "min": 18,
+          "max": 120
+        },
+        {
+          "key": "scr",
+          "label": "Creatinina sérica (mg/dL)",
+          "min": 0.01,
+          "max": 30
+        },
+        {
+          "key": "female",
+          "label": "Sexo utilizado por la ecuación",
+          "options": [
+            {
+              "label": "Masculino",
+              "value": 0
+            },
+            {
+              "label": "Femenino",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cockcroft",
+      "name": "Cockcroft-Gault · 1976",
+      "area": "Calculadoras",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "Ecuación histórica. El médico debe elegir y documentar el peso apropiado; limitaciones importantes en obesidad, extremos de composición corporal y creatinina inestable. No se redondea creatinina ni se ajustan medicamentos automáticamente.",
+      "source": "https://www.kidney.org/professionals/kdoqi/cockcroft-gault-equation-estimating-creatinine-clearance",
+      "formula": "cockcroft",
+      "unit": "mL/min",
+      "fields": [
+        {
+          "key": "age",
+          "label": "Edad (años completos)",
+          "min": 18,
+          "max": 120
+        },
+        {
+          "key": "weight",
+          "label": "Peso para cálculo (kg)",
+          "min": 1,
+          "max": 500
+        },
+        {
+          "key": "scr",
+          "label": "Creatinina sérica (mg/dL)",
+          "min": 0.01,
+          "max": 30
+        },
+        {
+          "key": "female",
+          "label": "Sexo utilizado por la ecuación",
+          "options": [
+            {
+              "label": "Masculino",
+              "value": 0
+            },
+            {
+              "label": "Femenino",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bsa",
+      "name": "Superficie corporal · Mosteller",
+      "area": "Calculadoras",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "√(talla cm × peso kg / 3600). Estimación; no calcula dosis por sí sola.",
+      "source": "https://pubmed.ncbi.nlm.nih.gov/3657876/",
+      "formula": "bsa",
+      "unit": "m²",
+      "fields": [
+        {
+          "key": "weight",
+          "label": "Peso para cálculo (kg)",
+          "min": 1,
+          "max": 500
+        },
+        {
+          "key": "height",
+          "label": "Talla (cm)",
+          "min": 30,
+          "max": 260
+        }
+      ]
+    },
+    {
+      "id": "anion",
+      "name": "Brecha aniónica · sin potasio",
+      "area": "Calculadoras",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "Na − (Cl + HCO₃). No corregida por albúmina; usar intervalo del laboratorio.",
+      "source": "https://www.merckmanuals.com/professional/nephrology/acid-base-regulation-and-disorders/acid-base-disorders",
+      "formula": "anion",
+      "unit": "mmol/L",
+      "fields": [
+        {
+          "key": "na",
+          "label": "Sodio (mmol/L)",
+          "min": 80,
+          "max": 200
+        },
+        {
+          "key": "cl",
+          "label": "Cloro (mmol/L)",
+          "min": 40,
+          "max": 180
+        },
+        {
+          "key": "hco3",
+          "label": "Bicarbonato (mmol/L)",
+          "min": 1,
+          "max": 60
+        }
+      ]
+    },
+    {
+      "id": "osm",
+      "name": "Osmolaridad sérica · calculada",
+      "area": "Calculadoras",
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "population": "Adultos; confirmar la indicación y contexto clínico.",
+      "limitations": "2×Na + glucosa/18 + BUN/2.8. Aproximación; no es osmolalidad medida ni osmolaridad efectiva y no incluye alcoholes.",
+      "source": "https://www.merckmanuals.com/professional/nephrology/acid-base-regulation-and-disorders/metabolic-acidosis",
+      "formula": "osm",
+      "unit": "mOsm/L",
+      "fields": [
+        {
+          "key": "na",
+          "label": "Sodio (mmol/L)",
+          "min": 80,
+          "max": 200
+        },
+        {
+          "key": "glucose",
+          "label": "Glucosa (mg/dL)",
+          "min": 1,
+          "max": 2000
+        },
+        {
+          "key": "bun",
+          "label": "BUN (mg/dL; NO urea)",
+          "min": 0,
+          "max": 300
+        }
+      ]
+    }
+  ]
+}
