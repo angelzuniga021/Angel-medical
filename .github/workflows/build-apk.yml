@@ -53,6 +53,9 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y poppler-utils
           python checks/check_recipe_pages.py
+          pdftoppm -scale-to 1100 -png scale-fixture/scale.pdf scale-fixture/scale
+          pdftotext scale-fixture/scale.pdf scale-fixture/scale.txt
+          grep "CHA2DS2" scale-fixture/scale.txt
           pdfsig recipe-fixture/signed.pdf
           pdfsig recipe-fixture/signed.pdf | grep "Signature is Valid"
           pdftoppm -scale-to 1100 -png recipe-fixture/signed.pdf recipe-fixture/signed
@@ -93,5 +96,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: Revision-recetas-${{ github.run_number }}
-          path: recipe-fixture/
+          path: |
+            recipe-fixture/
+            scale-fixture/
           retention-days: 14

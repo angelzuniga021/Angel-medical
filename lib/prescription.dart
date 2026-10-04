@@ -359,7 +359,6 @@ class _PrescriptionFormState extends State<PrescriptionForm> {
                               decoration: const InputDecoration(
                                 labelText: 'Frecuencia',
                                 hintText: 'Ej. 8 horas; revisar indicación completa',
-                                hintText: '8 horas',
                               ),
                             ),
                           ),

@@ -1,8 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
+import 'clinical_scale_pdf.dart';
 import 'package:printing/printing.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'db.dart';
@@ -138,19 +137,7 @@ class _ScaleHistoryState extends State<ScaleHistory>{
   Future<void> load()async{try{final r=await AppDb.instance.all('clinical_scales',where:'patient_id=?',args:[widget.patient['id']],orderBy:'date DESC,id DESC');if(mounted)setState(()=>rows=r);}catch(_){if(mounted)setState(()=>error='No se pudo cargar el historial.');}}
   Future<void> printRow(Map<String,Object?> row)async{
     try{
-      final payload=jsonDecode('${row['payload']}') as Map<String,dynamic>;
-      final patient=Map<String,dynamic>.from(payload['patient'] as Map);
-      final profile=Map<String,dynamic>.from(payload['profile'] as Map);
-      final doc=pw.Document();
-      doc.addPage(pw.MultiPage(pageFormat:PdfPageFormat.a4,build:(_)=>[
-        pw.Header(level:0,text:'Ángel Medical · Evaluación clínica'),
-        pw.Text('Paciente: ${patient['first_name']} ${patient['last_name']}'),
-        pw.Text('Médico: ${profile['doctor']??'Sin autor registrado'} · Cédula: ${profile['license']??''}'),
-        pw.SizedBox(height:12),
-        ...'${row['summary']}'.split('\n').map((line)=>pw.Padding(padding:const pw.EdgeInsets.only(bottom:5),child:pw.Text(line))),
-        pw.SizedBox(height:12),pw.Text('Registro de evaluación sin firma electrónica. No sustituye una nota clínica ni certifica cumplimiento normativo.'),
-      ]));
-      final bytes=await doc.save();await Printing.layoutPdf(name:'Evaluacion_clinica.pdf',onLayout:(_)async=>bytes);
+      final bytes=await buildScalePdf(row);await Printing.layoutPdf(name:'Evaluacion_clinica.pdf',onLayout:(_)async=>bytes);
     }catch(_){if(mounted)clinicalMessage(context,'No se pudo generar el PDF.');}
   }
   @override Widget build(BuildContext context){
