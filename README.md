@@ -13,7 +13,7 @@ Aplicación Flutter para expediente clínico local cifrado en Android. Cada méd
 ## Funciones del expediente
 
 - Mapa corporal interactivo con vistas anterior/posterior, varias regiones, intensidad opcional y descripción. Se conserva en la nota, revisión, PDF y respaldo.
-- Firma criptográfica local del PDF y su manifiesto con `.cer` y `.key` cifrada. Se exporta el PDF exacto junto con firmas CMS `.p7s`; no es PAdES incrustada. Clave privada y contraseña no se guardan en la base.
+- Firma criptográfica local integrada al PDF con `.cer` y `.key` cifrada. Se conservan las firmas previas y se exporta la versión exacta firmada. Clave privada y contraseña no se guardan en la base.
 - Revisión de documentación y pendientes normativos. No constituye certificación ni dictamen de cumplimiento NOM.
 - Exportación cifrada `.amx` para un futuro lector en PC, compartible por el menú del sistema, incluido Drive cuando esté disponible. La recuperación actual sigue usando `.ambak`.
 - Conservación del perfil existente al actualizar; historia guiada, resumen del paciente, historial completo, correcciones auditadas, agenda, documentos, PIN/biometría y catálogo CIE-10 precargado.

@@ -78,8 +78,7 @@ class _ScaleAssessmentState extends State<ScaleAssessment> {
   String get summary=>widget.tool.summary(input,score!,evaluatedAt,notes.text);
   void calculate(){
     if(!applicable){setState(()=>failure='Confirma que la población e indicación corresponden.');return;}
-    if(!form.currentState!.validate())return;
-    try{final s=widget.tool.calculate(input);setState((){score=s;failure=null;});}catch(e){setState(()=>failure=e.toString().replaceFirst('FormatException: ',''));}
+    try{final s=widget.tool.calculate(input);setState((){score=s;failure=null;});}catch(e){form.currentState!.validate();setState(()=>failure=e.toString().replaceFirst('FormatException: ',''));}
   }
   Future<void> save()async{
     if(score==null||busy||saved||widget.patient==null)return;
@@ -115,7 +114,7 @@ class _ScaleAssessmentState extends State<ScaleAssessment> {
       if(t.instructions.isNotEmpty)clinicalPanel(context,'Instrucciones',[Text(t.instructions)]),
       Padding(padding:const EdgeInsets.symmetric(vertical:16),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('$completed de $requiredCount respuestas obligatorias',style:Theme.of(context).textTheme.titleSmall),const SizedBox(height:8),LinearProgressIndicator(value:completed/requiredCount),const SizedBox(height:6),const Text('Revisa los datos antes de calcular. No se completan respuestas automáticamente.') ])),
       for(final f in t.fields)Padding(padding:const EdgeInsets.only(bottom:16),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('${t.fields.indexOf(f)+1}. ${f.label}${f.optional?' (opcional · no suma puntos)':''}',style:Theme.of(context).textTheme.titleSmall),const SizedBox(height:8),f.options.isNotEmpty?
-        DropdownButtonFormField<String>(value:input[f.key]?.isEmpty==true?null:input[f.key],isExpanded:true,itemHeight:null,decoration:const InputDecoration(labelText:'Respuesta'),items:f.options.map((o)=>DropdownMenuItem<String>(value:'${o['value']}',child:Text('${o['label']}',))).toList(),selectedItemBuilder:(context)=>f.options.map((o)=>Text('${o['label']}',overflow:TextOverflow.ellipsis)).toList(),validator:(v)=>v==null&&!f.optional?'Selecciona una respuesta':null,onChanged:(v){input[f.key]=v??'';invalidate();}):
+        DropdownButtonFormField<String>(key:ValueKey(f.key),value:input[f.key]?.isEmpty==true?null:input[f.key],isExpanded:true,itemHeight:null,decoration:const InputDecoration(labelText:'Respuesta'),items:f.options.map((o)=>DropdownMenuItem<String>(value:'${o['value']}',child:Text('${o['label']}',))).toList(),selectedItemBuilder:(context)=>f.options.map((o)=>Text('${o['label']}',overflow:TextOverflow.ellipsis)).toList(),validator:(v)=>v==null&&!f.optional?'Selecciona una respuesta':null,onChanged:(v){input[f.key]=v??'';invalidate();}):
         TextFormField(key:ValueKey(f.key),keyboardType:const TextInputType.numberWithOptions(decimal:true),decoration:InputDecoration(labelText:'Valor',helperText:'Rango de captura: ${f.min}–${f.max}'),validator:(v){final n=double.tryParse((v??'').trim().replaceAll(',','.'));return n==null||!n.isFinite?'Introduce un dato válido':n<f.min!||n>f.max!?'Fuera de rango':null;},onChanged:(v){input[f.key]=v;invalidate();}),
         if(f.options.isNotEmpty && (input[f.key]??'').isNotEmpty)Padding(padding:const EdgeInsets.only(top:6),child:Text('Respuesta: ${f.display(double.parse(input[f.key]!))}')),
         if(f.optional && (input[f.key]??'').isNotEmpty)TextButton(onPressed:(){input.remove(f.key);invalidate();},child:const Text('Dejar sin respuesta')),

@@ -56,6 +56,11 @@ jobs:
           pdftoppm -scale-to 1100 -png scale-fixture/scale.pdf scale-fixture/scale
           pdftotext scale-fixture/scale.pdf scale-fixture/scale.txt
           grep "CHA2DS2" scale-fixture/scale.txt
+          pdftoppm -scale-to 1100 -png scale-fixture/phq9.pdf scale-fixture/phq9
+          pdftotext scale-fixture/phq9.pdf scale-fixture/phq9.txt
+          grep "Ítem 9 positivo" scale-fixture/phq9.txt
+          grep "Extremadamente difícil" scale-fixture/phq9.txt
+          grep "Pfizer" scale-fixture/phq9.txt
           pdfsig recipe-fixture/signed.pdf
           pdfsig recipe-fixture/signed.pdf | grep "Signature is Valid"
           pdftoppm -scale-to 1100 -png recipe-fixture/signed.pdf recipe-fixture/signed
