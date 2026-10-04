@@ -9,6 +9,11 @@ android {
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
+    packaging {
+        // JVM OSGi metadata is duplicated across BC jars and is unused by Android.
+        resources.excludes.add("META-INF/versions/**/OSGI-INF/MANIFEST.MF")
+    }
+
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
