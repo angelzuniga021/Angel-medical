@@ -1,8 +1,16 @@
-# Ángel Medical 2.8
+# Ángel Medical 3.1
 
 Aplicación Flutter para expediente clínico local cifrado en Android. Cada médico conserva su perfil y su propia base. Esta edición prepara intercambio futuro con PC, pero no incluye todavía una aplicación de escritorio ni sincronización entre dispositivos.
 
-## Novedades
+## Novedades de 3.1
+
+- Catálogo independiente de 33 herramientas: 25 escalas y 8 calculadoras, con favoritos, búsqueda, filtro por tipo/área, cálculo sin internet y registro por paciente.
+- Nuevas: PHQ-9, PHQ-2, GAD-7, GAD-2, sPESI 2010 y Ginebra revisada 2006.
+- Formularios con avance, respuestas seleccionadas legibles, revisión del contexto y resultados con interpretación y límites. PHQ-9 presenta una alerta independiente del total al responder positivamente el ítem 9; la pregunta funcional no suma puntos.
+- Las evaluaciones se guardan como registros nuevos, se pueden agregar al borrador de una nota o exportar a PDF.
+- Esta edición no integra una API, contenido ni certificación de MDCalc. Consulta [ESCALAS_3_1.md](ESCALAS_3_1.md) para fuentes y alcance.
+
+## Funciones del expediente
 
 - Mapa corporal interactivo con vistas anterior/posterior, varias regiones, intensidad opcional y descripción. Se conserva en la nota, revisión, PDF y respaldo.
 - Firma criptográfica local del PDF y su manifiesto con `.cer` y `.key` cifrada. Se exporta el PDF exacto junto con firmas CMS `.p7s`; no es PAdES incrustada. Clave privada y contraseña no se guardan en la base.
@@ -16,7 +24,7 @@ Consulta [CAMBIOS_2_8.md](CAMBIOS_2_8.md), [REVISION_NORMATIVA.md](REVISION_NORM
 
 En **Actions → Generar APK Angel Medical**, abre una ejecución verde y descarga su artifact `Angel-Medical-comunidad-N`. Extrae el ZIP e instala la APK. Los artifacts se conservan 14 días.
 
-Antes de actualizar, crea un respaldo `.ambak`, conserva su contraseña y guarda una copia fuera del teléfono. Instala la misma edición sobre la aplicación existente, sin desinstalar. Cambiar identificador o clave de firma Android produce otra instalación o impide actualizar: no regenerar la firma estable. Esquema actual 6; esta versión usa metadatos y adjuntos existentes para mapa y firmas.
+Antes de actualizar, crea un respaldo `.ambak`, conserva su contraseña y guarda una copia fuera del teléfono. Instala la misma edición sobre la aplicación existente, sin desinstalar. Cambiar identificador o clave de firma Android produce otra instalación o impide actualizar: no regenerar la firma estable. Esquema actual 7, con evaluaciones clínicas conservadas dentro de la base y los respaldos.
 
 ## Firmar una nota
 

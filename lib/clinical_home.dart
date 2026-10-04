@@ -386,7 +386,7 @@ class _ClinicalToolsState extends State<ClinicalTools> {
       padding: const EdgeInsets.all(16),
       children: [
         clinicalPanel(context, 'Escalas y calculadoras clínicas', [
-          ListTile(leading: const Icon(Icons.calculate_outlined), title: const Text('Abrir catálogo · 27 herramientas'), subtitle: const Text('Busca por área y guarda favoritos. Desde un paciente puedes guardar evaluaciones.'), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ClinicalScalesScreen()))),
+          ListTile(leading: const Icon(Icons.calculate_outlined), title: const Text('Abrir catálogo de escalas'), subtitle: const Text('Busca por área y guarda favoritos. Desde un paciente puedes guardar evaluaciones.'), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ClinicalScalesScreen()))),
         ]),
         clinicalPanel(context, 'PC y Drive · preparación', [
           ListTile(title: const Text('Crear instantánea cifrada para PC'), subtitle: const Text('Formato preparado para un futuro lector. No es sincronización.'), leading: const Icon(Icons.computer_outlined), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ClinicalExchangeScreen()))),
@@ -488,7 +488,7 @@ class _ClinicalToolsState extends State<ClinicalTools> {
             ),
         ]),
         const ListTile(
-          title: Text('Angel Medical 3.0.0'),
+          title: Text('Angel Medical 3.1.0'),
           subtitle: Text(
             'Uso local · Expediente cifrado · Sincronización entre dispositivos no incluida',
           ),

@@ -8,7 +8,7 @@ void main(){
  ClinicalScale t(String id)=>tools.singleWhere((t)=>t.id==id);
  Map<String,String> zeros(ClinicalScale t)=>{for(final f in t.fields)f.key:f.options.isNotEmpty?'${f.options.reduce((a,b)=>(a['value'] as num)<(b['value'] as num)?a:b)['value']}':'${f.min}'};
  test('Catalog identities, provenance and supported formulas',(){
-   expect(tools.length,27);expect(tools.map((t)=>t.id).toSet().length,27);
+   expect(tools.length,33);expect(tools.map((t)=>t.id).toSet().length,33);
    for(final tool in tools){expect(tool.source,startsWith('https://'));expect(tool.population,isNotEmpty);expect(tool.limitations,isNotEmpty);expect(tool.version,'1.0');}
  });
  for(final tool in tools){
@@ -16,7 +16,7 @@ void main(){
    expect(()=>tool.calculate({}),throwsFormatException);
    final data=zeros(tool);if(tool.id=='gcs'){data.addAll({'eye':'4','verbal':'5','motor':'6'});}
    for(final f in tool.fields){
-     expect(()=>tool.calculate({...data,f.key:''}),throwsFormatException);
+     if(!f.optional)expect(()=>tool.calculate({...data,f.key:''}),throwsFormatException);
      expect(()=>tool.calculate({...data,f.key:'NaN'}),throwsFormatException);
      expect(()=>tool.calculate({...data,f.key:'Infinity'}),throwsFormatException);
      if(f.options.isNotEmpty){expect(()=>tool.calculate({...data,f.key:'999'}),throwsFormatException);}else{expect(()=>tool.calculate({...data,f.key:'${f.min!-1}'}),throwsFormatException);expect(()=>tool.calculate({...data,f.key:'${f.max!+1}'}),throwsFormatException);}
@@ -30,8 +30,8 @@ void main(){
    expect(t('perc').source,contains('18318689'));
  });
  test('Published ranges and negative weighted criteria',(){
-   const maxima={'gcs':15,'curb65':5,'crb65':4,'qsofa':3,'sirs':4,'wells_pe':12.5,'wells_dvt':9,'perc':8,'heart':10,'cha_va':8,'cha_vasc':9,'hasbled':9,'centor':4,'mcisaac':5,'alvarado':10,'padua':20,'gbs':23,'sofa':24};
-   for(final e in maxima.entries){final tool=t(e.key);final input={for(final f in tool.fields)f.key:'${f.options.map((o)=>(o['value'] as num).toDouble()).reduce(math.max)}'};expect(tool.calculate(input),e.value,reason:e.key);}
+   const maxima={'gcs':15,'curb65':5,'crb65':4,'qsofa':3,'sirs':4,'wells_pe':12.5,'wells_dvt':9,'perc':8,'heart':10,'cha_va':8,'cha_vasc':9,'hasbled':9,'centor':4,'mcisaac':5,'alvarado':10,'padua':20,'gbs':23,'sofa':24,'phq9':27,'phq2':6,'gad7':21,'gad2':6,'spesi':6,'geneva':22};
+   for(final e in maxima.entries){final tool=t(e.key);final input={for(final f in tool.fields.where((f)=>f.scored))f.key:'${f.options.map((o)=>(o['value'] as num).toDouble()).reduce(math.max)}'};expect(tool.calculate(input),e.value,reason:e.key);}
    final dvt=zeros(t('wells_dvt'));expect(t('wells_dvt').calculate(dvt),-2);
    final mc=zeros(t('mcisaac'));expect(t('mcisaac').calculate(mc),-1);
    expect(t('gcs').calculate({'eye':'1','verbal':'1','motor':'1'}),3);
@@ -60,6 +60,18 @@ void main(){
    expect(t('osm').calculate({'na':'140','glucose':'180','bun':'28'}),300);
    expect(t('bmi').calculate({'weight':'80,5','height':'200'}),20.125);
    expect(()=>t('pain').calculate({'pain':'3.5'}),throwsFormatException);
+ });
+ test('Mental health thresholds, optional functional question and independent safety alert',(){
+   final phq=t('phq9');final data=zeros(phq)..remove('function');
+   expect(phq.calculate(data),0);expect(phq.calculate({...data,'function':'3'}),0);
+   expect(phq.calculate({...data,'q9':'1'}),1);expect(phq.alerts({...data,'q9':'1'}).single,contains('evaluar ahora'));expect(phq.alerts(data),isEmpty);
+   expect(phq.summary(data,0,DateTime(2026,10,4),''),contains('Sin respuesta (no puntúa)'));
+   for(final e in {4:'mínimos',5:'leves',10:'moderados',15:'moderadamente graves',20:'graves'}.entries){expect(phq.interpretation(e.key.toDouble()),contains(e.value));}
+   for(final e in {4:'mínimos',5:'leves',10:'moderados',15:'graves'}.entries){expect(t('gad7').interpretation(e.key.toDouble()),contains(e.value));}
+   for(final id in ['phq2','gad2']){expect(t(id).interpretation(2),contains('debajo'));expect(t(id).interpretation(3),contains('positivo'));}
+   expect(t('geneva').interpretation(3),contains('baja'));expect(t('geneva').interpretation(4),contains('intermedia'));expect(t('geneva').interpretation(10),contains('intermedia'));expect(t('geneva').interpretation(11),contains('alta'));
+   expect(t('spesi').interpretation(0),contains('bajo'));expect(t('spesi').interpretation(1),contains('elevado'));
+   for(final id in ['phq9','phq2','gad7','gad2']){expect(t(id).instructions,contains('2 semanas'));expect(t(id).translationSource,startsWith('https://depts.washington.edu/'));expect(t(id).attribution,contains('Pfizer'));}
  });
  test('Summary preserves zero answers, limitations and version',(){
    final tool=t('perc');final input=zeros(tool);final text=tool.summary(input,tool.calculate(input),DateTime(2026,10,4),'Contexto ficticio');

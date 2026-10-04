@@ -2288,6 +2288,766 @@
           "max": 300
         }
       ]
+    },
+    {
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "formula": "sum",
+      "unit": "puntos",
+      "id": "phq9",
+      "name": "PHQ-9",
+      "area": "Salud mental",
+      "population": "Tamizaje de síntomas en adultos durante las últimas 2 semanas. Versión en español para EE. UU.; no se afirma validación específica en México.",
+      "limitations": "No establece un diagnóstico ni decide tratamiento. Una puntuación baja no excluye enfermedad ni riesgo de autolesión. La pregunta funcional no suma puntos. El ítem 9 requiere evaluación clínica directa cuando es positivo.",
+      "source": "https://www.hiv.uw.edu/page/mental-health-screening/phq-9",
+      "fields": [
+        {
+          "key": "q1",
+          "label": "Poco interés o placer en hacer cosas",
+          "options": [
+            {
+              "label": "Ningún día",
+              "value": 0
+            },
+            {
+              "label": "Varios días",
+              "value": 1
+            },
+            {
+              "label": "Más de la mitad de los días",
+              "value": 2
+            },
+            {
+              "label": "Casi todos los días",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "q2",
+          "label": "Se ha sentido decaído(a), deprimido(a) o sin esperanzas",
+          "options": [
+            {
+              "label": "Ningún día",
+              "value": 0
+            },
+            {
+              "label": "Varios días",
+              "value": 1
+            },
+            {
+              "label": "Más de la mitad de los días",
+              "value": 2
+            },
+            {
+              "label": "Casi todos los días",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "q3",
+          "label": "Ha tenido dificultad para quedarse o permanecer dormido(a), o ha dormido demasiado",
+          "options": [
+            {
+              "label": "Ningún día",
+              "value": 0
+            },
+            {
+              "label": "Varios días",
+              "value": 1
+            },
+            {
+              "label": "Más de la mitad de los días",
+              "value": 2
+            },
+            {
+              "label": "Casi todos los días",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "q4",
+          "label": "Se ha sentido cansado(a) o con poca energía",
+          "options": [
+            {
+              "label": "Ningún día",
+              "value": 0
+            },
+            {
+              "label": "Varios días",
+              "value": 1
+            },
+            {
+              "label": "Más de la mitad de los días",
+              "value": 2
+            },
+            {
+              "label": "Casi todos los días",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "q5",
+          "label": "Sin apetito o ha comido en exceso",
+          "options": [
+            {
+              "label": "Ningún día",
+              "value": 0
+            },
+            {
+              "label": "Varios días",
+              "value": 1
+            },
+            {
+              "label": "Más de la mitad de los días",
+              "value": 2
+            },
+            {
+              "label": "Casi todos los días",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "q6",
+          "label": "Se ha sentido mal con usted mismo(a) – o que es un fracaso o que ha quedado mal con usted mismo(a) o con su familia",
+          "options": [
+            {
+              "label": "Ningún día",
+              "value": 0
+            },
+            {
+              "label": "Varios días",
+              "value": 1
+            },
+            {
+              "label": "Más de la mitad de los días",
+              "value": 2
+            },
+            {
+              "label": "Casi todos los días",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "q7",
+          "label": "Ha tenido dificultad para concentrarse en ciertas actividades, tales como leer el periódico o ver la televisión",
+          "options": [
+            {
+              "label": "Ningún día",
+              "value": 0
+            },
+            {
+              "label": "Varios días",
+              "value": 1
+            },
+            {
+              "label": "Más de la mitad de los días",
+              "value": 2
+            },
+            {
+              "label": "Casi todos los días",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "q8",
+          "label": "¿Se ha movido o hablado tan lento que otras personas podrían haberlo notado? o lo contrario – muy inquieto(a) o agitado(a) que ha estado moviéndose mucho más de lo normal",
+          "options": [
+            {
+              "label": "Ningún día",
+              "value": 0
+            },
+            {
+              "label": "Varios días",
+              "value": 1
+            },
+            {
+              "label": "Más de la mitad de los días",
+              "value": 2
+            },
+            {
+              "label": "Casi todos los días",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "q9",
+          "label": "Pensamientos de que estaría mejor muerto(a) o de lastimarse de alguna manera",
+          "options": [
+            {
+              "label": "Ningún día",
+              "value": 0
+            },
+            {
+              "label": "Varios días",
+              "value": 1
+            },
+            {
+              "label": "Más de la mitad de los días",
+              "value": 2
+            },
+            {
+              "label": "Casi todos los días",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "function",
+          "label": "Si marcó cualquiera de los problemas, ¿qué tanta dificultad le han dado estos problemas para hacer su trabajo, encargarse de las tareas del hogar, o llevarse bien con otras personas?",
+          "options": [
+            {
+              "label": "No ha sido difícil",
+              "value": 0
+            },
+            {
+              "label": "Un poco difícil",
+              "value": 1
+            },
+            {
+              "label": "Muy difícil",
+              "value": 2
+            },
+            {
+              "label": "Extremadamente difícil",
+              "value": 3
+            }
+          ],
+          "scored": false,
+          "optional": true
+        }
+      ],
+      "instructions": "Durante las últimas 2 semanas, ¿qué tan seguido ha tenido molestias debido a los siguientes problemas?",
+      "attribution": "Elaborado por Robert L. Spitzer, Janet B.W. Williams, Kurt Kroenke y colegas con una subvención educativa de Pfizer Inc. No se requiere permiso para reproducir, traducir, presentar o distribuir.",
+      "translationSource": "https://depts.washington.edu/uwhatc/wp-content/uploads/2022/07/PHQ9_Spanish-for-the-USA-1.pdf"
+    },
+    {
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "formula": "sum",
+      "unit": "puntos",
+      "id": "phq2",
+      "name": "PHQ-2",
+      "area": "Salud mental",
+      "population": "Tamizaje de síntomas en adultos durante las últimas 2 semanas. Versión en español para EE. UU.; no se afirma validación específica en México.",
+      "limitations": "No establece un diagnóstico ni decide tratamiento. Una puntuación baja no excluye enfermedad ni riesgo de autolesión. Las formas de 2 preguntas no evalúan riesgo de suicidio.",
+      "source": "https://www.hiv.uw.edu/page/mental-health-screening/phq-2",
+      "fields": [
+        {
+          "key": "q1",
+          "label": "Poco interés o placer en hacer cosas",
+          "options": [
+            {
+              "label": "Ningún día",
+              "value": 0
+            },
+            {
+              "label": "Varios días",
+              "value": 1
+            },
+            {
+              "label": "Más de la mitad de los días",
+              "value": 2
+            },
+            {
+              "label": "Casi todos los días",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "q2",
+          "label": "Se ha sentido decaído(a), deprimido(a) o sin esperanzas",
+          "options": [
+            {
+              "label": "Ningún día",
+              "value": 0
+            },
+            {
+              "label": "Varios días",
+              "value": 1
+            },
+            {
+              "label": "Más de la mitad de los días",
+              "value": 2
+            },
+            {
+              "label": "Casi todos los días",
+              "value": 3
+            }
+          ]
+        }
+      ],
+      "instructions": "Durante las últimas 2 semanas, ¿qué tan seguido ha tenido molestias debido a los siguientes problemas?",
+      "attribution": "Elaborado por Robert L. Spitzer, Janet B.W. Williams, Kurt Kroenke y colegas con una subvención educativa de Pfizer Inc. No se requiere permiso para reproducir, traducir, presentar o distribuir.",
+      "translationSource": "https://depts.washington.edu/uwhatc/wp-content/uploads/2022/07/PHQ9_Spanish-for-the-USA-1.pdf"
+    },
+    {
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "formula": "sum",
+      "unit": "puntos",
+      "id": "gad7",
+      "name": "GAD-7",
+      "area": "Salud mental",
+      "population": "Tamizaje de síntomas en adultos durante las últimas 2 semanas. Versión en español para EE. UU.; no se afirma validación específica en México.",
+      "limitations": "No establece un diagnóstico ni decide tratamiento. Una puntuación baja no excluye enfermedad ni riesgo de autolesión. Interpretar junto con entrevista y contexto.",
+      "source": "https://www.hiv.uw.edu/page/mental-health-screening/gad-7",
+      "fields": [
+        {
+          "key": "q1",
+          "label": "Se ha sentido nervioso(a), ansioso(a) o con los nervios de punta",
+          "options": [
+            {
+              "label": "Ningún día",
+              "value": 0
+            },
+            {
+              "label": "Varios días",
+              "value": 1
+            },
+            {
+              "label": "Más de la mitad de los días",
+              "value": 2
+            },
+            {
+              "label": "Casi todos los días",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "q2",
+          "label": "No ha sido capaz de parar o controlar su preocupación",
+          "options": [
+            {
+              "label": "Ningún día",
+              "value": 0
+            },
+            {
+              "label": "Varios días",
+              "value": 1
+            },
+            {
+              "label": "Más de la mitad de los días",
+              "value": 2
+            },
+            {
+              "label": "Casi todos los días",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "q3",
+          "label": "Se ha preocupado demasiado por motivos diferentes",
+          "options": [
+            {
+              "label": "Ningún día",
+              "value": 0
+            },
+            {
+              "label": "Varios días",
+              "value": 1
+            },
+            {
+              "label": "Más de la mitad de los días",
+              "value": 2
+            },
+            {
+              "label": "Casi todos los días",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "q4",
+          "label": "Ha tenido dificultad para relajarse",
+          "options": [
+            {
+              "label": "Ningún día",
+              "value": 0
+            },
+            {
+              "label": "Varios días",
+              "value": 1
+            },
+            {
+              "label": "Más de la mitad de los días",
+              "value": 2
+            },
+            {
+              "label": "Casi todos los días",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "q5",
+          "label": "Se ha sentido tan inquieto(a) que no ha podido quedarse quieto(a)",
+          "options": [
+            {
+              "label": "Ningún día",
+              "value": 0
+            },
+            {
+              "label": "Varios días",
+              "value": 1
+            },
+            {
+              "label": "Más de la mitad de los días",
+              "value": 2
+            },
+            {
+              "label": "Casi todos los días",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "q6",
+          "label": "Se ha molestado o irritado fácilmente",
+          "options": [
+            {
+              "label": "Ningún día",
+              "value": 0
+            },
+            {
+              "label": "Varios días",
+              "value": 1
+            },
+            {
+              "label": "Más de la mitad de los días",
+              "value": 2
+            },
+            {
+              "label": "Casi todos los días",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "q7",
+          "label": "Ha tenido miedo de que algo terrible fuera a pasar",
+          "options": [
+            {
+              "label": "Ningún día",
+              "value": 0
+            },
+            {
+              "label": "Varios días",
+              "value": 1
+            },
+            {
+              "label": "Más de la mitad de los días",
+              "value": 2
+            },
+            {
+              "label": "Casi todos los días",
+              "value": 3
+            }
+          ]
+        }
+      ],
+      "instructions": "Durante las últimas 2 semanas, ¿qué tan seguido ha tenido molestias debido a los siguientes problemas?",
+      "attribution": "Elaborado por Robert L. Spitzer, Janet B.W. Williams, Kurt Kroenke y colegas con una subvención educativa de Pfizer Inc. No se requiere permiso para reproducir, traducir, presentar o distribuir.",
+      "translationSource": "https://depts.washington.edu/uwhatc/wp-content/uploads/2022/07/GAD7_Spanish-for-the-USA.pdf"
+    },
+    {
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "formula": "sum",
+      "unit": "puntos",
+      "id": "gad2",
+      "name": "GAD-2",
+      "area": "Salud mental",
+      "population": "Tamizaje de síntomas en adultos durante las últimas 2 semanas. Versión en español para EE. UU.; no se afirma validación específica en México.",
+      "limitations": "No establece un diagnóstico ni decide tratamiento. Una puntuación baja no excluye enfermedad ni riesgo de autolesión. Las formas de 2 preguntas no evalúan riesgo de suicidio.",
+      "source": "https://www.hiv.uw.edu/page/mental-health-screening/gad-2",
+      "fields": [
+        {
+          "key": "q1",
+          "label": "Se ha sentido nervioso(a), ansioso(a) o con los nervios de punta",
+          "options": [
+            {
+              "label": "Ningún día",
+              "value": 0
+            },
+            {
+              "label": "Varios días",
+              "value": 1
+            },
+            {
+              "label": "Más de la mitad de los días",
+              "value": 2
+            },
+            {
+              "label": "Casi todos los días",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "q2",
+          "label": "No ha sido capaz de parar o controlar su preocupación",
+          "options": [
+            {
+              "label": "Ningún día",
+              "value": 0
+            },
+            {
+              "label": "Varios días",
+              "value": 1
+            },
+            {
+              "label": "Más de la mitad de los días",
+              "value": 2
+            },
+            {
+              "label": "Casi todos los días",
+              "value": 3
+            }
+          ]
+        }
+      ],
+      "instructions": "Durante las últimas 2 semanas, ¿qué tan seguido ha tenido molestias debido a los siguientes problemas?",
+      "attribution": "Elaborado por Robert L. Spitzer, Janet B.W. Williams, Kurt Kroenke y colegas con una subvención educativa de Pfizer Inc. No se requiere permiso para reproducir, traducir, presentar o distribuir.",
+      "translationSource": "https://depts.washington.edu/uwhatc/wp-content/uploads/2022/07/GAD7_Spanish-for-the-USA.pdf"
+    },
+    {
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "formula": "sum",
+      "unit": "puntos",
+      "id": "spesi",
+      "name": "sPESI · modelo 2010",
+      "area": "Tromboembolia",
+      "population": "Adultos con TEP aguda sintomática ya confirmada: estimación pronóstica a 30 días.",
+      "limitations": "No sirve para diagnosticar o excluir TEP. Cero puntos no autoriza alta por sí solo: valorar estabilidad, comorbilidades, tratamiento y soporte para seguimiento. No extrapolar a población pediátrica.",
+      "source": "https://pubmed.ncbi.nlm.nih.gov/20696966/",
+      "fields": [
+        {
+          "key": "age",
+          "label": "Edad >80 años",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "cancer",
+          "label": "Antecedente de cáncer",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "cardiopulmonary",
+          "label": "Insuficiencia cardiaca o enfermedad pulmonar crónica (un solo punto aunque tenga ambas)",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "hr",
+          "label": "Frecuencia cardiaca ≥110 latidos/min",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "sbp",
+          "label": "Presión arterial sistólica <100 mmHg",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "spo2",
+          "label": "Saturación de oxígeno <90%",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "version": "1.0",
+      "reviewed": "2026-10-04",
+      "formula": "sum",
+      "unit": "puntos",
+      "id": "geneva",
+      "name": "Ginebra revisada · modelo 2006",
+      "area": "Tromboembolia",
+      "population": "Adultos en urgencias con sospecha de TEP, clínicamente estables; modelo de tres niveles.",
+      "limitations": "Probabilidad preprueba: no diagnostica ni excluye TEP por sí sola. No es Ginebra simplificada ni YEARS. El estudio de derivación excluyó embarazo, choque, anticoagulación en curso y pacientes con contraindicaciones a tomografía; aplicar protocolo diagnóstico y juicio clínico.",
+      "source": "https://pubmed.ncbi.nlm.nih.gov/16461960/",
+      "fields": [
+        {
+          "key": "age",
+          "label": "Edad >65 años",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "key": "history",
+          "label": "Antecedente de TVP o TEP",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "surgery",
+          "label": "Cirugía bajo anestesia general o fractura de miembros inferiores durante el último mes",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "cancer",
+          "label": "Neoplasia sólida o hematológica activa, o considerada curada hace menos de 1 año",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "pain",
+          "label": "Dolor unilateral de miembro inferior",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 3
+            }
+          ]
+        },
+        {
+          "key": "hemoptysis",
+          "label": "Hemoptisis",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 2
+            }
+          ]
+        },
+        {
+          "key": "hr",
+          "label": "Frecuencia cardiaca (latidos/min)",
+          "options": [
+            {
+              "label": "<75",
+              "value": 0
+            },
+            {
+              "label": "75–94",
+              "value": 3
+            },
+            {
+              "label": "≥95",
+              "value": 5
+            }
+          ]
+        },
+        {
+          "key": "palpation",
+          "label": "Dolor a la palpación venosa profunda y edema unilateral de miembro inferior (ambos)",
+          "options": [
+            {
+              "label": "No",
+              "value": 0
+            },
+            {
+              "label": "Sí",
+              "value": 4
+            }
+          ]
+        }
+      ]
     }
   ]
 }

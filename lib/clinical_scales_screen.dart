@@ -18,7 +18,7 @@ class ClinicalScalesScreen extends StatefulWidget {
 class _ClinicalScalesScreenState extends State<ClinicalScalesScreen> {
   List<ClinicalScale>? tools;
   Set<String> favorites={};
-  String query='',area='Todas';
+  String query='',area='Todas',kind='Todas';
   bool favoritesOnly=false;
   String? error;
   @override void initState(){super.initState();load();}
@@ -39,7 +39,7 @@ class _ClinicalScalesScreenState extends State<ClinicalScalesScreen> {
     if(text!=null && widget.selectForNote && mounted)Navigator.pop(context,text);
   }
   @override Widget build(BuildContext context){
-    final visible=(tools??[]).where((t)=>(area=='Todas'||t.area==area)&&(!favoritesOnly||favorites.contains(t.id))&&('${t.name} ${t.area} ${t.id}'.toLowerCase().contains(query.toLowerCase()))).toList();
+    final visible=(tools??[]).where((t)=>(area=='Todas'||t.area==area)&&(kind=='Todas'||(kind=='Calculadoras')==(t.area=='Calculadoras'))&&(!favoritesOnly||favorites.contains(t.id))&&('${t.name} ${t.area} ${t.id}'.toLowerCase().contains(query.toLowerCase()))).toList();
     return Scaffold(appBar:AppBar(title:const Text('Escalas y calculadoras'),actions:[
       if(widget.patient!=null)IconButton(tooltip:'Historial del paciente',icon:const Icon(Icons.history),onPressed:()async{final text=await Navigator.push<String>(context,MaterialPageRoute(builder:(_)=>ScaleHistory(patient:widget.patient!,selectForNote:widget.selectForNote)));if(text!=null&&widget.selectForNote&&mounted)Navigator.pop(context,text);}),
       IconButton(tooltip:'Actualizar',onPressed:load,icon:const Icon(Icons.refresh)),
@@ -48,9 +48,10 @@ class _ClinicalScalesScreenState extends State<ClinicalScalesScreen> {
       const SizedBox(height:12),TextField(decoration:const InputDecoration(labelText:'Buscar escala o calculadora',prefixIcon:Icon(Icons.search)),onChanged:(v)=>setState(()=>query=v)),
       const SizedBox(height:12),DropdownButtonFormField<String>(value:area,isExpanded:true,decoration:const InputDecoration(labelText:'Área'),items:['Todas',...tools!.map((t)=>t.area).toSet()].map((a)=>DropdownMenuItem(value:a,child:Text(a))).toList(),onChanged:(v)=>setState(()=>area=v??'Todas')),
       FilterChip(label:Text('Favoritos · ${favorites.length}'),selected:favoritesOnly,onSelected:(v)=>setState(()=>favoritesOnly=v)),
-      Text('${visible.length} herramientas · cálculo local sin internet'),
+      Wrap(spacing:8,children:[for(final k in ['Todas','Escalas','Calculadoras'])ChoiceChip(label:Text(k),selected:kind==k,onSelected:(_)=>setState(()=>kind=k))]),
+      Padding(padding:const EdgeInsets.symmetric(vertical:12),child:Text('${visible.length} de ${tools!.length} herramientas · disponibles sin internet',style:Theme.of(context).textTheme.titleSmall)),
       if(visible.isEmpty)const Padding(padding:EdgeInsets.all(20),child:Text('No hay coincidencias. Cambia el filtro.')),
-      for(final t in visible)Card(child:ListTile(isThreeLine:true,leading:Icon(t.area=='Calculadoras'?Icons.calculate_outlined:Icons.assignment_outlined),title:Text(t.name),subtitle:Text('${t.area}\nVersión ${t.version} · ver indicación y fuente'),onTap:()=>open(t),trailing:IconButton(tooltip:'Favorito',icon:Icon(favorites.contains(t.id)?Icons.star:Icons.star_border),onPressed:()=>favorite(t)))),
+      for(final t in visible)Card(child:ListTile(isThreeLine:true,leading:Icon(t.area=='Calculadoras'?Icons.calculate_outlined:Icons.assignment_outlined),title:Text(t.name),subtitle:Text('${t.area} · ${t.fields.where((f)=>f.scored).length} datos\nVersión ${t.version} · ver indicación y fuente'),onTap:()=>open(t),trailing:IconButton(tooltip:'Favorito',icon:Icon(favorites.contains(t.id)?Icons.star:Icons.star_border),onPressed:()=>favorite(t)))),
     ]));
   }
 }
@@ -72,6 +73,8 @@ class _ScaleAssessmentState extends State<ScaleAssessment> {
   @override void initState(){super.initState();notes.addListener(invalidate);}
   @override void dispose(){notes.removeListener(invalidate);notes.dispose();super.dispose();}
   void invalidate(){if(mounted)setState((){score=null;saved=false;failure=null;});}
+  int get completed=>widget.tool.fields.where((f)=>!f.optional && (input[f.key]??'').trim().isNotEmpty).length;
+  int get requiredCount=>widget.tool.fields.where((f)=>!f.optional).length;
   String get summary=>widget.tool.summary(input,score!,evaluatedAt,notes.text);
   void calculate(){
     if(!applicable){setState(()=>failure='Confirma que la población e indicación corresponden.');return;}
@@ -104,17 +107,28 @@ class _ScaleAssessmentState extends State<ScaleAssessment> {
         Text(t.population),const SizedBox(height:8),Text(t.limitations),
         CheckboxListTile(contentPadding:EdgeInsets.zero,value:applicable,title:const Text('Confirmo que esta herramienta corresponde al paciente y al contexto'),onChanged:(v){setState(()=>applicable=v??false);invalidate();}),
         TextButton.icon(onPressed:()async{if(!await launchUrl(Uri.parse(t.source),mode:LaunchMode.externalApplication)&&mounted)clinicalMessage(context,'No se pudo abrir la fuente.');},icon:const Icon(Icons.open_in_new),label:const Text('Fuente original / guía')),
+        if(t.translationSource.isNotEmpty)TextButton.icon(onPressed:()async{if(!await launchUrl(Uri.parse(t.translationSource),mode:LaunchMode.externalApplication)&&mounted)clinicalMessage(context,'No se pudo abrir la versión en español.');},icon:const Icon(Icons.language),label:const Text('Cuestionario original en español')),
+        if(t.attribution.isNotEmpty)Text(t.attribution,style:Theme.of(context).textTheme.bodySmall),
         Text('Versión ${t.version} · catálogo 2026-10-04'),
       ]),
       ListTile(contentPadding:EdgeInsets.zero,title:const Text('Fecha y hora de la evaluación'),subtitle:Text(clinicalDate(evaluatedAt.toIso8601String())),trailing:const Icon(Icons.event),onTap:date),
-      for(final f in t.fields)Padding(padding:const EdgeInsets.only(bottom:16),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(f.label,style:Theme.of(context).textTheme.titleSmall),const SizedBox(height:8),f.options.isNotEmpty?
-        DropdownButtonFormField<String>(isExpanded:true,itemHeight:null,decoration:const InputDecoration(labelText:'Respuesta'),items:f.options.map((o)=>DropdownMenuItem<String>(value:'${o['value']}',child:Text('${o['label']}',))).toList(),selectedItemBuilder:(context)=>f.options.map((o)=>Text('${o['label']}',overflow:TextOverflow.ellipsis)).toList(),validator:(v)=>v==null?'Selecciona una respuesta':null,onChanged:(v){input[f.key]=v??'';invalidate();}):
-        TextFormField(key:ValueKey(f.key),keyboardType:const TextInputType.numberWithOptions(decimal:true),decoration:InputDecoration(labelText:'Valor',helperText:'Rango de captura: ${f.min}–${f.max}'),validator:(v){final n=double.tryParse((v??'').trim().replaceAll(',','.'));return n==null||!n.isFinite?'Introduce un dato válido':n<f.min!||n>f.max!?'Fuera de rango':null;},onChanged:(v){input[f.key]=v;invalidate();})])),
+      if(t.instructions.isNotEmpty)clinicalPanel(context,'Instrucciones',[Text(t.instructions)]),
+      Padding(padding:const EdgeInsets.symmetric(vertical:16),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('$completed de $requiredCount respuestas obligatorias',style:Theme.of(context).textTheme.titleSmall),const SizedBox(height:8),LinearProgressIndicator(value:completed/requiredCount),const SizedBox(height:6),const Text('Revisa los datos antes de calcular. No se completan respuestas automáticamente.') ])),
+      for(final f in t.fields)Padding(padding:const EdgeInsets.only(bottom:16),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text('${t.fields.indexOf(f)+1}. ${f.label}${f.optional?' (opcional · no suma puntos)':''}',style:Theme.of(context).textTheme.titleSmall),const SizedBox(height:8),f.options.isNotEmpty?
+        DropdownButtonFormField<String>(value:input[f.key]?.isEmpty==true?null:input[f.key],isExpanded:true,itemHeight:null,decoration:const InputDecoration(labelText:'Respuesta'),items:f.options.map((o)=>DropdownMenuItem<String>(value:'${o['value']}',child:Text('${o['label']}',))).toList(),selectedItemBuilder:(context)=>f.options.map((o)=>Text('${o['label']}',overflow:TextOverflow.ellipsis)).toList(),validator:(v)=>v==null&&!f.optional?'Selecciona una respuesta':null,onChanged:(v){input[f.key]=v??'';invalidate();}):
+        TextFormField(key:ValueKey(f.key),keyboardType:const TextInputType.numberWithOptions(decimal:true),decoration:InputDecoration(labelText:'Valor',helperText:'Rango de captura: ${f.min}–${f.max}'),validator:(v){final n=double.tryParse((v??'').trim().replaceAll(',','.'));return n==null||!n.isFinite?'Introduce un dato válido':n<f.min!||n>f.max!?'Fuera de rango':null;},onChanged:(v){input[f.key]=v;invalidate();}),
+        if(f.options.isNotEmpty && (input[f.key]??'').isNotEmpty)Padding(padding:const EdgeInsets.only(top:6),child:Text('Respuesta: ${f.display(double.parse(input[f.key]!))}')),
+        if(f.optional && (input[f.key]??'').isNotEmpty)TextButton(onPressed:(){input.remove(f.key);invalidate();},child:const Text('Dejar sin respuesta')),
+      ])),
+        for(final alert in t.alerts(input))Card(color:Theme.of(context).colorScheme.errorContainer,child:Padding(padding:const EdgeInsets.all(12),child:Text(alert,style:TextStyle(color:Theme.of(context).colorScheme.onErrorContainer)))),
       TextField(controller:notes,maxLines:3,decoration:const InputDecoration(labelText:'Observaciones / contexto / peso elegido')),
       const SizedBox(height:16),FilledButton.icon(onPressed:calculate,icon:const Icon(Icons.calculate),label:const Text('Calcular')),
       if(failure!=null)Padding(padding:const EdgeInsets.all(12),child:Text(failure!,style:TextStyle(color:Theme.of(context).colorScheme.error))),
       if(score!=null)clinicalPanel(context,'Resultado',[
-        Text('${formatScaleValue(score!)} ${t.unit}',style:Theme.of(context).textTheme.headlineMedium),Text(t.interpretation(score!)),const SizedBox(height:12),
+        Text('${formatScaleValue(score!)} ${t.unit}',style:Theme.of(context).textTheme.headlineMedium),const SizedBox(height:8),Text(t.interpretation(score!),style:Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height:12),Text(t.limitations),
+        ExpansionTile(tilePadding:EdgeInsets.zero,title:const Text('Revisar respuestas y contexto'),children:[for(final f in t.fields)ListTile(contentPadding:EdgeInsets.zero,title:Text(f.label),subtitle:Text((input[f.key]??'').isEmpty?'Sin respuesta (no puntúa)':f.display(double.parse(input[f.key]!.replaceAll(',','.'))))),if(notes.text.trim().isNotEmpty)Text(notes.text.trim())]),
+        const SizedBox(height:12),
         if(widget.patient!=null)FilledButton.icon(onPressed:saved?null:save,icon:Icon(saved?Icons.check:Icons.save_outlined),label:Text(saved?'Guardado en el expediente':'Guardar evaluación')),
         OutlinedButton.icon(onPressed:()async{await Clipboard.setData(ClipboardData(text:summary));if(mounted)clinicalMessage(context,'Resultado y respuestas copiados.');},icon:const Icon(Icons.copy),label:const Text('Copiar para una nota')),
         if(widget.selectForNote)OutlinedButton.icon(onPressed:()=>Navigator.pop(context,summary),icon:const Icon(Icons.note_add_outlined),label:const Text('Agregar al borrador de la nota')),

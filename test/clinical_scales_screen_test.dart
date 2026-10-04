@@ -19,11 +19,13 @@ void main(){
   await tester.scrollUntilVisible(find.byType(TextFormField),-100,scrollable:find.byType(Scrollable).first);await tester.enterText(find.byType(TextFormField),'3');await tester.pump();expect(find.text('Resultado'),findsNothing);
   expect(tester.takeException(),isNull);
  });
+ for(final id in ['sofa','phq9','gad7']){
  for(final brightness in Brightness.values){
-  testWidgets('Long scale criteria readable in narrow large-text $brightness',(tester)async{
+  testWidgets('Long scale criteria readable in narrow large-text $id $brightness',(tester)async{
    tester.view.physicalSize=const Size(320,750);tester.view.devicePixelRatio=1;addTearDown(tester.view.resetPhysicalSize);addTearDown(tester.view.resetDevicePixelRatio);
-   await tester.pumpWidget(MaterialApp(theme:clinicalTheme(brightness),builder:(ctx,child)=>MediaQuery(data:MediaQuery.of(ctx).copyWith(textScaler:const TextScaler.linear(1.5)),child:child!),home:ScaleAssessment(tool:tools.singleWhere((t)=>t.id=='sofa'))));
+   await tester.pumpWidget(MaterialApp(theme:clinicalTheme(brightness),builder:(ctx,child)=>MediaQuery(data:MediaQuery.of(ctx).copyWith(textScaler:const TextScaler.linear(1.5)),child:child!),home:ScaleAssessment(tool:tools.singleWhere((t)=>t.id==id))));
    await tester.scrollUntilVisible(find.text('Calcular'),200,scrollable:find.byType(Scrollable).first);await tester.pump();expect(tester.takeException(),isNull);
   });
+ }
  }
 }

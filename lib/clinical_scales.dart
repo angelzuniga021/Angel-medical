@@ -4,8 +4,10 @@ import 'dart:math' as math;
 class ScaleField {
   final String key, label;
   final double? min, max;
+  final bool scored, optional;
   final List<Map<String, dynamic>> options;
   ScaleField(Map<String, dynamic> j) : key=j['key'] as String, label=j['label'] as String,
+    scored=j['scored']!=false, optional=j['optional']==true,
     min=(j['min'] as num?)?.toDouble(), max=(j['max'] as num?)?.toDouble(),
     options=(j['options'] as List? ?? []).map((v)=>Map<String,dynamic>.from(v as Map)).toList();
   String display(double value) => options.isEmpty ? '$value' : options.firstWhere((o)=>(o['value'] as num).toDouble()==value)['label'] as String;
@@ -13,11 +15,13 @@ class ScaleField {
 class ClinicalScale {
   final String id, name, area, version, population, limitations, source, formula, unit;
   final List<ScaleField> fields;
-  ClinicalScale(Map<String,dynamic> j) : id=j['id'],name=j['name'],area=j['area'],version=j['version'],population=j['population'],limitations=j['limitations'],source=j['source'],formula=j['formula'],unit=j['unit'],fields=(j['fields'] as List).map((v)=>ScaleField(Map<String,dynamic>.from(v as Map))).toList();
+  final String instructions, attribution, translationSource;
+  ClinicalScale(Map<String,dynamic> j) : instructions=j['instructions']??'', attribution=j['attribution']??'', translationSource=j['translationSource']??'', id=j['id'],name=j['name'],area=j['area'],version=j['version'],population=j['population'],limitations=j['limitations'],source=j['source'],formula=j['formula'],unit=j['unit'],fields=(j['fields'] as List).map((v)=>ScaleField(Map<String,dynamic>.from(v as Map))).toList();
   Map<String, double> validate(Map<String, String> input) {
     final out=<String,double>{};
     for(final f in fields) {
       final raw=(input[f.key]??'').trim().replaceAll(',', '.');
+      if(raw.isEmpty && f.optional) continue;
       final value=double.tryParse(raw);
       if(value==null || !value.isFinite) throw FormatException('Evaluación incompleta: ${f.label}');
       if(f.options.isNotEmpty && !f.options.any((o)=>(o['value'] as num).toDouble()==value)) throw FormatException('Opción no válida: ${f.label}');
@@ -33,7 +37,7 @@ class ClinicalScale {
     double n(String k)=>v[k]!;
     double result;
     switch(formula) {
-      case 'sum':result=v.values.fold<double>(0,(a,b)=>a+b);break;
+      case 'sum':result=fields.where((f)=>f.scored).fold<double>(0,(a,f)=>a+v[f.key]!);break;
       case 'bmi': result=n('weight')/math.pow(n('height')/100,2);break;
       case 'map':
         if(n('dbp')>n('sbp')) throw const FormatException('La PAD no puede superar la PAS.');
@@ -53,6 +57,12 @@ class ClinicalScale {
   }
   String interpretation(double s) {
     switch(id) {
+      case 'phq9':return s<5?'Síntomas depresivos mínimos.':s<10?'Síntomas depresivos leves.':s<15?'Síntomas depresivos moderados.':s<20?'Síntomas depresivos moderadamente graves.':'Síntomas depresivos graves.';
+      case 'gad7':return s<5?'Síntomas de ansiedad mínimos.':s<10?'Síntomas de ansiedad leves.':s<15?'Síntomas de ansiedad moderados.':'Síntomas de ansiedad graves.';
+      case 'phq2':return s>=3?'Tamizaje positivo: ampliar entrevista y considerar PHQ-9.':'Tamizaje por debajo del umbral de 3; no excluye depresión.';
+      case 'gad2':return s>=3?'Tamizaje positivo: ampliar entrevista y considerar GAD-7.':'Tamizaje por debajo del umbral de 3; no excluye un trastorno de ansiedad.';
+      case 'spesi':return s==0?'Estrato pronóstico bajo según sPESI; valorar criterios adicionales antes de decidir manejo.':'Estrato pronóstico elevado según sPESI.';
+      case 'geneva':return s<=3?'Probabilidad preprueba baja.':s<=10?'Probabilidad preprueba intermedia.':'Probabilidad preprueba alta.';
       case 'pain':return s==0?'Sin dolor referido.':s<=3?'Intensidad leve.':s<=6?'Intensidad moderada.':'Intensidad elevada.';
       case 'gcs':return 'Total E + V + M. Interpretar los componentes y factores que interfieren.';
       case 'curb65':return s<=1?'Estrato bajo.':s==2?'Estrato intermedio.':'Estrato alto.';
@@ -73,11 +83,15 @@ class ClinicalScale {
       default:return 'Resultado estimado. Ver unidades, fórmula y limitaciones del instrumento.';
     }
   }
+  List<String> alerts(Map<String,String> input) {
+    if(id=='phq9' && (double.tryParse(input['q9']??'')??0)>0) return ['Ítem 9 positivo: evaluar ahora pensamientos de muerte/autolesión, intención, plan, medios y seguridad. El total no determina el riesgo. Si existe peligro inmediato, activar el protocolo de urgencias y acompañamiento.'];
+    return [];
+  }
   String summary(Map<String,String> input, double value, DateTime date, String notes) {
     final v=validate(input);
     final d=date.toLocal();
     final when='${d.day.toString().padLeft(2,'0')}/${d.month.toString().padLeft(2,'0')}/${d.year} ${d.hour.toString().padLeft(2,'0')}:${d.minute.toString().padLeft(2,'0')} (hora local)';
-    return '$name · versión $version\nFecha: $when\nResultado: ${formatScaleValue(value)} $unit\n${interpretation(value)}\n\n${fields.map((f)=>'${f.label}: ${f.display(v[f.key]!)}').join('\n')}\n\nObservaciones: ${notes.trim().isEmpty?'Sin observaciones adicionales':notes.trim()}\nAplicación: $population\nLimitaciones: $limitations\nFuente: $source';
+    return '$name · versión $version\nFecha: $when\nResultado: ${formatScaleValue(value)} $unit\n${interpretation(value)}\n${alerts(input).join('\n')}\n$instructions\n${fields.map((f)=>'${f.label}: ${v.containsKey(f.key)?f.display(v[f.key]!):"Sin respuesta (no puntúa)"}').join('\n')}\n\nObservaciones: ${notes.trim().isEmpty?'Sin observaciones adicionales':notes.trim()}\nAplicación: $population\nLimitaciones: $limitations\nFuente: $source${translationSource.isEmpty?'':'\nVersión en español: $translationSource'}${attribution.isEmpty?'':'\n$attribution'}';
   }
 }
 String formatScaleValue(double value)=>value==value.roundToDouble()?value.toInt().toString():value.toStringAsFixed(2);
@@ -87,6 +101,7 @@ List<ClinicalScale> parseScaleCatalog(String raw) {
   final tools=(json['tools'] as List).map((v)=>ClinicalScale(Map<String,dynamic>.from(v as Map))).toList();
   if(tools.map((t)=>t.id).toSet().length!=tools.length) throw const FormatException('Identificadores duplicados.');
   for(final t in tools) {
+    if(t.fields.any((f)=>f.optional && f.scored)) throw const FormatException('Un componente puntuado no puede ser opcional.');
     if(t.fields.isEmpty || t.fields.map((f)=>f.key).toSet().length!=t.fields.length || !t.source.startsWith('https://')) throw const FormatException('Definición incompleta.');
   }
   return tools;
