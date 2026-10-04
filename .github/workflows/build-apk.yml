@@ -51,6 +51,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y poppler-utils
+          python checks/check_recipe_pages.py
           pdfsig recipe-fixture/signed.pdf
           pdfsig recipe-fixture/signed.pdf | grep "Signature is Valid"
           pdftoppm -scale-to 1100 -png recipe-fixture/signed.pdf recipe-fixture/signed

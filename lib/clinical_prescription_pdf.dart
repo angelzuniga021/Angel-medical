@@ -41,13 +41,13 @@ Future<Uint8List> buildRecipePdf({required Map<String,Object?> patient, required
       if('${rx['diagnosis'] ?? ''}'.trim().isNotEmpty)...[heading('Diagnóstico'),...paragraphs('${rx['diagnosis']}')],
       heading('Tratamiento'),
       if(medications.isEmpty)...paragraphs('${record['content'] ?? ''}'),
-      for(final entry in medications.asMap().entries) pw.Container(
+      for(final entry in medications.asMap().entries) pw.Inseparable(child:pw.Container(
         margin: const pw.EdgeInsets.only(bottom:12),
         child:pw.Column(crossAxisAlignment:pw.CrossAxisAlignment.start,children:[
         pw.Text('${entry.key+1}. ${entry.value['name'] ?? ''}',style:pw.TextStyle(fontSize:12,fontWeight:pw.FontWeight.bold)),
         ...paragraphs([for(final pair in {'presentation':'Presentación','dose':'Dosis','route':'Vía','frequency':'Frecuencia','duration':'Duración'}.entries) if('${entry.value[pair.key] ?? ''}'.trim().isNotEmpty)'${pair.value}: ${entry.value[pair.key]}'].join(' · ')),
         if('${entry.value['instructions'] ?? ''}'.trim().isNotEmpty)...paragraphs('${entry.value['instructions']}'),
-      ])),
+      ]))),
       if('${rx['recommendations'] ?? ''}'.trim().isNotEmpty)...[heading('Indicaciones y recomendaciones'),...paragraphs('${rx['recommendations']}')],
       pw.SizedBox(height:24),
       if(signed) pw.Row(crossAxisAlignment:pw.CrossAxisAlignment.start,children:[pw.Padding(padding:const pw.EdgeInsets.all(8),child:pw.BarcodeWidget(barcode:pw.Barcode.qrCode(),data:recipeQr(record,certificate!),width:88,height:88)),pw.SizedBox(width:14),pw.Expanded(child:pw.Column(crossAxisAlignment:pw.CrossAxisAlignment.start,children:[pw.Text('Firma electrónica integrada',style:pw.TextStyle(fontWeight:pw.FontWeight.bold,color:blue)),text('Firmante: $signerName',size:9),text('Firma realizada: ${dateText(signedAt!.toLocal())} · ${signedAt.toLocal().hour.toString().padLeft(2,'0')}:${signedAt.toLocal().minute.toString().padLeft(2,'0')}',size:9),pw.SizedBox(height:6),text('Verifica la firma digital en un lector compatible. El QR identifica el folio y sus referencias; no es una validación SAT ni un enlace público.',size:8),text('Sin comprobación de revocación ni sello de tiempo confiable.',size:8),pw.Annotation(builder:ClinicalSignatureAnnotation(),child:pw.SizedBox(width:1,height:1))]))])
