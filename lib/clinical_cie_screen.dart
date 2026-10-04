@@ -46,7 +46,8 @@ class _ClinicalCieScreenState extends State<ClinicalCieScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: Text(widget.select ? 'Elegir diagnóstico' : 'Biblioteca CIE-10')),
-    body: Column(children: [
+    body: CustomScrollView(slivers: [
+      SliverToBoxAdapter(child: Column(children: [
       Padding(padding: const EdgeInsets.fromLTRB(18, 12, 18, 0), child: TextField(
         controller: query, autofocus: widget.select,
         decoration: InputDecoration(hintText: 'Código o diagnóstico · E11.9, diabetes…', prefixIcon: const Icon(Icons.search), suffixIcon: IconButton(tooltip: 'Limpiar búsqueda', onPressed: query.clear, icon: const Icon(Icons.close))),
@@ -56,13 +57,14 @@ class _ClinicalCieScreenState extends State<ClinicalCieScreen> {
         const SizedBox(width: 12), const Expanded(child: Text('Disponible sin conexión', style: TextStyle(fontSize: 12))),
       ])),
       if (loading) const LinearProgressIndicator(),
-      Expanded(child: error != null ? Center(child: Text(error!)) : rows.isEmpty
-        ? ListView(children: [Padding(padding: const EdgeInsets.all(28), child: Column(mainAxisSize: MainAxisSize.min, children: [
+      ])),
+      if (error != null) SliverToBoxAdapter(child: Padding(padding: const EdgeInsets.all(24), child: Text(error!)))
+      else if (rows.isEmpty) SliverToBoxAdapter(child: Padding(padding: const EdgeInsets.all(28), child: Column(mainAxisSize: MainAxisSize.min, children: [
           Icon(Icons.manage_search_rounded, size: 56, color: Theme.of(context).colorScheme.primary), const SizedBox(height: 16),
           Text(query.text.trim().length < 2 && !favorites ? 'Busca por nombre o código' : 'Sin coincidencias', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 8), const Text('Usa al menos dos caracteres. Marca tus diagnósticos frecuentes con la estrella.', textAlign: TextAlign.center),
-        ]))])
-        : ListView.builder(padding: const EdgeInsets.symmetric(horizontal: 14), itemCount: rows.length, itemBuilder: (ctx, i) {
+        ])))
+      else SliverPadding(padding: const EdgeInsets.symmetric(horizontal: 14), sliver: SliverList.builder(itemCount: rows.length, itemBuilder: (ctx, i) {
           final row = rows[i]; final code = '${row['code']}';
           return Card(child: ListTile(
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -72,7 +74,7 @@ class _ClinicalCieScreenState extends State<ClinicalCieScreen> {
             onTap: widget.select ? () => Navigator.pop(context, row) : null,
           ));
         })),
-      const Padding(padding: EdgeInsets.all(14), child: Text('Referencia: catálogo y diccionario importados. Códigos no vigentes excluidos de nuevas selecciones. Hasta 100 resultados por búsqueda.', style: TextStyle(fontSize: 11), textAlign: TextAlign.center)),
+      const SliverToBoxAdapter(child: Padding(padding: EdgeInsets.all(14), child: Text('Referencia: catálogo y diccionario importados. Códigos no vigentes excluidos de nuevas selecciones. Hasta 100 resultados por búsqueda.', style: TextStyle(fontSize: 11), textAlign: TextAlign.center))),
     ]),
   );
 }
