@@ -14,6 +14,7 @@ void main() {
     expect(BundledCie.entries['U071']!['name'], 'COVID-19, VIRUS IDENTIFICADO');
     expect(BundledCie.displayCode('e11.9'), 'E11.9');
     expect(BundledCie.canonical('E11.9'), 'E119');
+    expect(BundledCie.displayCode('I10X'), 'I10X');
     final retired = items.firstWhere((m) => m['valid'] == false);
     expect(BundledCie.selectable('${retired['code']}'), false);
     expect(BundledCie.selectable(BundledCie.displayCode('${retired['code']}')), false);

@@ -48,6 +48,7 @@ class BundledCie {
   static bool complementary(String code) => entries[canonical(code)]?['complementary'] == true;
   static String displayCode(String code) {
     final c = canonical(code);
-    return c.length == 4 ? '${c.substring(0, 3)}.${c.substring(3)}' : c;
+    // X is a padding character in this supplied catalog; keep its key literal.
+    return c.length == 4 && !c.endsWith('X') ? '${c.substring(0, 3)}.${c.substring(3)}' : c;
   }
 }
