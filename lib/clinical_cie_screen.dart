@@ -57,11 +57,11 @@ class _ClinicalCieScreenState extends State<ClinicalCieScreen> {
       ])),
       if (loading) const LinearProgressIndicator(),
       Expanded(child: error != null ? Center(child: Text(error!)) : rows.isEmpty
-        ? Center(child: Padding(padding: const EdgeInsets.all(28), child: Column(mainAxisSize: MainAxisSize.min, children: [
+        ? ListView(children: [Padding(padding: const EdgeInsets.all(28), child: Column(mainAxisSize: MainAxisSize.min, children: [
           Icon(Icons.manage_search_rounded, size: 56, color: Theme.of(context).colorScheme.primary), const SizedBox(height: 16),
           Text(query.text.trim().length < 2 && !favorites ? 'Busca por nombre o código' : 'Sin coincidencias', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 8), const Text('Usa al menos dos caracteres. Marca tus diagnósticos frecuentes con la estrella.', textAlign: TextAlign.center),
-        ])))
+        ]))])
         : ListView.builder(padding: const EdgeInsets.symmetric(horizontal: 14), itemCount: rows.length, itemBuilder: (ctx, i) {
           final row = rows[i]; final code = '${row['code']}';
           return Card(child: ListTile(
