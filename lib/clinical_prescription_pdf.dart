@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:pdf/pdf.dart';
+import 'package:pdf/src/pdf/format/stream.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'clinical_nom.dart';
 import 'clinical_signature_data.dart';
@@ -54,5 +55,11 @@ Future<Uint8List> buildRecipePdf({required Map<String,Object?> patient, required
       else ...[pw.Container(width:220,decoration:const pw.BoxDecoration(border:pw.Border(top:pw.BorderSide()))),pw.SizedBox(height:4),text('Firma del médico',size:9)],
       if(nom['profile'] is! Map)...[pw.SizedBox(height:10),text('Registro previo: datos del perfil actual para presentación; no se atribuye autor retrospectivamente.',size:8)],
     ]));
+  // Native Flutter channels require the UI isolate. save() uses pdfCompute.
+  if (signer != null) {
+    final stream = PdfStream();
+    await doc.write(stream);
+    return stream.output();
+  }
   return doc.save();
 }

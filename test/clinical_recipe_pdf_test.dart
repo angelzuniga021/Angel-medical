@@ -3,10 +3,12 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/services.dart';
 import 'package:angel_medical_mobile/clinical_prescription_pdf.dart';
 import 'package:angel_medical_mobile/clinical_pdf_signature.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   final patient=<String,Object?>{'id':1,'first_name':'Paciente','last_name':'Prueba','dob':'2000-01-02'};
   Map<String,Object?> record({int count=2}) {
     const content='Tratamiento de prueba';
@@ -24,6 +26,23 @@ void main() {
     final updated=await buildRecipePdf(patient:patient,record:corrected);
     expect(latin1.decode(short),isNot(contains('/ByteRange')));expect(long.length,greaterThan(short.length));expect(updated,isNotEmpty);
     Directory('recipe-fixture').createSync();File('recipe-fixture/unsigned.pdf').writeAsBytesSync(short);File('recipe-fixture/long.pdf').writeAsBytesSync(long);
+  });
+  test('integrated signing can call the Android channel from the UI isolate', () async {
+    const channel = MethodChannel('angel_medical/test_signature_isolate');
+    var calls = 0;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(channel, (call) async {
+      calls++;
+      return Uint8List.fromList([0x30, 0]);
+    });
+    try {
+      final pdf = await buildRecipePdf(patient: patient, record: record(), certificate: Uint8List.fromList([1]), signerName: 'Test', signedAt: DateTime.utc(2026,10,4), signer: (data) async {
+        return (await channel.invokeMethod<Uint8List>('sign', data))!;
+      });
+      expect(calls, 1);
+      expect(embeddedPdfParts(pdf).cms, [0x30, 0]);
+    } finally {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(channel, null);
+    }
   });
   test('embedded PDF CMS verifies independently and rejects tampering',()async{
     final dir=Directory.systemTemp.createTempSync('angel_recipe_test');
