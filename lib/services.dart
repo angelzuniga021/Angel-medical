@@ -743,7 +743,7 @@ class PdfService {
             ),
           pw.SizedBox(height: 10),
           pw.Text(
-            'Recaba las firmas correspondientes y conserva el original firmado. La impresión no acredita una firma ni certifica cumplimiento normativo.',
+            signatureCopy ? 'La firma electrónica del médico se verifica con el archivo .p7s separado. No firma por el paciente ni los testigos. Recaba sus firmas cuando corresponda. No certifica cumplimiento normativo.' : 'Recaba las firmas correspondientes y conserva el original firmado. La impresión no acredita una firma ni certifica cumplimiento normativo.',
             style: const pw.TextStyle(fontSize: 8),
           ),
         ],

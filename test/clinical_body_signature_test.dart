@@ -50,8 +50,12 @@ void main() {
     await tester.pumpWidget(MaterialApp(builder: (ctx, child) => MediaQuery(data: MediaQuery.of(ctx).copyWith(textScaler: const TextScaler.linear(1.5)), child: child!), home: Scaffold(body: Builder(builder: (ctx) => TextButton(onPressed: () async { saved = await Navigator.push<String>(ctx, MaterialPageRoute(builder: (_) => const ClinicalBodyMap())); }, child: const Text('Abrir'))))));
     await tester.tap(find.text('Abrir')); await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.text('Brazo derecho'), 200, scrollable: find.byType(Scrollable).first);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Brazo derecho')); await tester.pumpAndSettle();
     await tester.tap(find.text('Brazo derecho')); await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.text('Usar este mapa en la nota'), 250, scrollable: find.byType(Scrollable).first);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Usar este mapa en la nota')); await tester.pumpAndSettle();
     await tester.tap(find.text('Usar este mapa en la nota')); await tester.pumpAndSettle();
     final point = parseBodyMap(saved!)['points'].single;
     expect(point['region'], 'right_arm'); expect(point['view'], 'front'); expect(point['severity'], isNull);
