@@ -10,7 +10,7 @@ void main(){
   await tester.pumpWidget(MaterialApp(home:ScaleAssessment(tool:tools.singleWhere((t)=>t.id=='pain'))));
   await tester.scrollUntilVisible(find.text('Calcular'),200,scrollable:find.byType(Scrollable).first);
   await tester.tap(find.text('Calcular'));await tester.pump();expect(find.textContaining('Confirma que la población'),findsOneWidget);
-  await tester.scrollUntilVisible(find.byType(CheckboxListTile),-200,scrollable:find.byType(Scrollable).first);
+  tester.state<ScrollableState>(find.byType(Scrollable).first).position.jumpTo(0);await tester.pumpAndSettle();
   await tester.tap(find.byType(CheckboxListTile));await tester.pump();
   await tester.scrollUntilVisible(find.text('Calcular'),200,scrollable:find.byType(Scrollable).first);await tester.tap(find.text('Calcular'));await tester.pump();await tester.scrollUntilVisible(find.textContaining('Evaluación incompleta:'),100,scrollable:find.byType(Scrollable).first);expect(find.textContaining('Evaluación incompleta:'),findsOneWidget);
   await tester.scrollUntilVisible(find.byType(TextFormField),-100,scrollable:find.byType(Scrollable).first);await tester.enterText(find.byType(TextFormField),'0');
