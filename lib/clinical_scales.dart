@@ -75,7 +75,9 @@ class ClinicalScale {
   }
   String summary(Map<String,String> input, double value, DateTime date, String notes) {
     final v=validate(input);
-    return '$name · versión $version\nFecha: ${date.toLocal().toIso8601String()}\nResultado: ${formatScaleValue(value)} $unit\n${interpretation(value)}\n\n${fields.map((f)=>'${f.label}: ${f.display(v[f.key]!)}').join('\n')}\n\nObservaciones: ${notes.trim().isEmpty?'Sin observaciones adicionales':notes.trim()}\nAplicación: $population\nLimitaciones: $limitations\nFuente: $source';
+    final d=date.toLocal();
+    final when='${d.day.toString().padLeft(2,'0')}/${d.month.toString().padLeft(2,'0')}/${d.year} ${d.hour.toString().padLeft(2,'0')}:${d.minute.toString().padLeft(2,'0')} (hora local)';
+    return '$name · versión $version\nFecha: $when\nResultado: ${formatScaleValue(value)} $unit\n${interpretation(value)}\n\n${fields.map((f)=>'${f.label}: ${f.display(v[f.key]!)}').join('\n')}\n\nObservaciones: ${notes.trim().isEmpty?'Sin observaciones adicionales':notes.trim()}\nAplicación: $population\nLimitaciones: $limitations\nFuente: $source';
   }
 }
 String formatScaleValue(double value)=>value==value.roundToDouble()?value.toInt().toString():value.toStringAsFixed(2);

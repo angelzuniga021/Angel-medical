@@ -47,7 +47,7 @@ void main(){
    expect(t('shock').calculate({'hr':'100','sbp':'80'}),1.25);
    expect(t('bsa').calculate({'weight':'80','height':'180'}),2);
    expect(t('cockcroft').calculate({'age':'68','weight':'72','scr':'1','female':'0'}),72);
-   expect(t('cockcroft').calculate({'age':'68','weight':'72','scr':'1','female':'1'}),61.2);
+   expect(t('cockcroft').calculate({'age':'68','weight':'72','scr':'1','female':'1'}),closeTo(61.2,1e-10));
    expect(t('ckdepi').calculate({'age':'50','scr':'1','female':'0'}),closeTo(91.6914786,0.0001));
    expect(t('ckdepi').calculate({'age':'50','scr':'1','female':'1'}),closeTo(68.6335,0.001));
    expect(t('anion').calculate({'na':'140','cl':'104','hco3':'24'}),12);
