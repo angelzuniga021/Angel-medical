@@ -77,3 +77,16 @@ class ClinicalSignatureAnnotation extends pw.AnnotationBuilder {
   if(size>bytes.length || bytes.sublist(size).any((b)=>b!=0)) throw const FormatException('Reserva CMS alterada.');
   return (data: Uint8List.fromList([...pdf.sublist(0,start),...pdf.sublist(end)]), cms: Uint8List.fromList(bytes.sublist(0,size)));
 }
+
+Uint8List completeEmbeddedPdf(Uint8List prepared, Uint8List cms) {
+  embeddedPdfParts(prepared); // Validate reserved range and complete coverage.
+  final text = latin1.decode(prepared);
+  final range = RegExp(r'/ByteRange\s*\[\s*0\s+(\d+)\s+(\d+)\s+(\d+)\s*\]').firstMatch(text)!;
+  final start = int.parse(range[1]!), end = int.parse(range[2]!);
+  final capacity = (end - start - 2) ~/ 2;
+  if (cms.length > capacity) throw const FormatException('La firma supera la reserva del PDF.');
+  final result = Uint8List.fromList(prepared);
+  final hex = cms.map((b) => b.toRadixString(16).padLeft(2, '0')).join().padRight(capacity * 2, '0');
+  result.setRange(start + 1, end - 1, ascii.encode(hex));
+  return result;
+}
