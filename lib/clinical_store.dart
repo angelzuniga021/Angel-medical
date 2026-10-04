@@ -137,6 +137,9 @@ class ClinicalStore {
         for (final key in nomKeys(table, input)) key: (input[key] ?? '').trim(),
         if (table == 'consultations')
           'nom_kind': input['nom_kind'] ?? 'Historia clínica inicial',
+        if (table == 'documents' && input['type'] == 'Receta')
+          if (input['nom_rx_data'] != null) 'nom_rx_data': input['nom_rx_data']!
+          else if (nomInput(original)['nom_rx_data'] != null) 'nom_rx_data': nomInput(original)['nom_rx_data']!,
       };
       if (original != null && oldNom.isNotEmpty) {
         final oldFields = nomInput(original);

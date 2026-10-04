@@ -1,3 +1,5 @@
+import 'clinical_prescription_pdf.dart';
+import 'clinical_pdf_signature.dart';
 import 'dart:typed_data';
 import 'clinical_profile.dart';
 import 'clinical_exchange_data.dart';
@@ -81,7 +83,7 @@ class BackupService {
         if (!RegExp(r'^[a-z_]+$').hasMatch(name)) throw const FormatException('Tabla no reconocida.');
         data[name] = (await tx.query(name)).map(exchangeRow).toList();
       }
-      return {'format': 'angel-medical-logical-snapshot', 'version': 1, 'app_version': '2.8.2', 'database_uuid': databaseId, 'schema_version': (await tx.rawQuery('PRAGMA user_version')).single['user_version'], 'created_at': DateTime.now().toUtc().toIso8601String(), 'blob_encoding': r'base64/$binary', 'tables': data};
+      return {'format': 'angel-medical-logical-snapshot', 'version': 1, 'app_version': '2.9.0', 'database_uuid': databaseId, 'schema_version': (await tx.rawQuery('PRAGMA user_version')).single['user_version'], 'created_at': DateTime.now().toUtc().toIso8601String(), 'blob_encoding': r'base64/$binary', 'tables': data};
     });
     final salt = List<int>.generate(16, (_) => Random.secure().nextInt(256));
     final encrypted = await _cipher.encrypt(utf8.encode(jsonEncode(snapshot)), secretKey: await _derive(password, salt));
@@ -667,7 +669,11 @@ class PdfService {
     required List<MapEntry<String, String>> fields,
     Map<String, Object?>? record,
     bool signatureCopy = false,
+    PdfCmsSigner? embeddedSigner, String? signerName, Uint8List? certificate, DateTime? signedAt,
   }) async {
+    if (record?['type'] == 'Receta') {
+      return buildRecipePdf(patient: patient, record: record!, legacyProfile: decodeNom(await AppDb.instance.getSetting('nom_profile')), signer: embeddedSigner, signerName: signerName, certificate: certificate, signedAt: signedAt);
+    }
     final doc = pw.Document();
     final nom = decodeNom(record?['nom_json']);
     final author = nom['profile'] is Map
@@ -786,269 +792,8 @@ class PdfService {
     Map<String, Object?>? vitals,
     Map<String, Object?>? record,
   }) async {
-    final doc = pw.Document();
-
-    final now = DateTime.tryParse('${record?['date'] ?? ''}') ?? DateTime.now();
-    final nom = decodeNom(record?['nom_json']);
-    final author = nom['profile'] is Map
-        ? Map<String, dynamic>.from(nom['profile'] as Map)
-        : <String, dynamic>{};
-
-    final logo =
-        _profileLogo(author) ??
-        (communityEdition
-            ? null
-            : await _assetImage('assets/images/logo_dr_angel.png'));
-    final phone = '${author['phone'] ?? ''}'.replaceAll(RegExp(r'[^0-9]'), '');
-    final contact = phone.length == 10 ? '52$phone' : phone;
-    final dob = '${patient['dob'] ?? ''}'.trim();
-    final age = ageFromDob(dob);
-    final patientMeta = <String>[
-      if (dob.isNotEmpty) 'F.N. $dob',
-      if (age != null) '$age años',
-      if ('${patient['sex'] ?? ''}'.trim().isNotEmpty) '${patient['sex']}',
-    ];
-
-    final vitalParts = <String>[
-      if (_vital(vitals, 'systolic').isNotEmpty ||
-          _vital(vitals, 'diastolic').isNotEmpty)
-        'TA ${_vital(vitals, 'systolic')}/${_vital(vitals, 'diastolic')} mmHg',
-      if (_vital(vitals, 'heart_rate').isNotEmpty)
-        'FC ${_vital(vitals, 'heart_rate')} lpm',
-      if (_vital(vitals, 'respiratory_rate').isNotEmpty)
-        'FR ${_vital(vitals, 'respiratory_rate')} rpm',
-      if (_vital(vitals, 'temperature', decimals: 1).isNotEmpty)
-        'Temp ${_vital(vitals, 'temperature', decimals: 1)} °C',
-      if (_vital(vitals, 'spo2').isNotEmpty) 'SpO₂ ${_vital(vitals, 'spo2')}%',
-      if (_vital(vitals, 'weight', decimals: 1).isNotEmpty)
-        'Peso ${_vital(vitals, 'weight', decimals: 1)} kg',
-      if (_vital(vitals, 'height', decimals: 1).isNotEmpty)
-        'Talla ${_vital(vitals, 'height', decimals: 1)} cm',
-      if (_vital(vitals, 'bmi', decimals: 1).isNotEmpty)
-        'IMC ${_vital(vitals, 'bmi', decimals: 1)}',
-      if (_vital(vitals, 'glucose').isNotEmpty)
-        'Glucosa ${_vital(vitals, 'glucose')} mg/dL',
-    ];
-
-    doc.addPage(
-      pw.Page(
-        pageFormat: PdfPageFormat.letter,
-        margin: const pw.EdgeInsets.fromLTRB(28, 22, 28, 22),
-        build: (_) => pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Row(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                if (logo != null)
-                  pw.Container(
-                    width: 142,
-                    height: 58,
-                    child: pw.Image(logo, fit: pw.BoxFit.contain),
-                  ),
-                pw.Spacer(),
-                pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.end,
-                  children: [
-                    pw.Text(
-                      '${author['doctor'] ?? 'Médico responsable sin registrar'}',
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                    ),
-                    pw.Text('${author['profession'] ?? ''}'),
-                    pw.Text('Cédula ${author['license'] ?? 'sin registrar'}'),
-                    pw.Text(
-                      '${contact.isEmpty ? '' : 'WhatsApp: $contact'}',
-                      style: const pw.TextStyle(fontSize: 8),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            pw.SizedBox(height: 7),
-            pw.Container(height: 1.5, color: PdfColors.blue900),
-            pw.SizedBox(height: 7),
-            pw.Text(
-              '${author['establishment'] ?? 'Establecimiento sin registrar'}',
-              style: pw.TextStyle(
-                fontWeight: pw.FontWeight.bold,
-                color: PdfColors.blue900,
-              ),
-            ),
-            pw.Text(
-              '${author['address'] ?? ''}',
-              style: const pw.TextStyle(fontSize: 8),
-            ),
-            pw.Text(
-              '${author['place'] ?? ''}',
-              style: const pw.TextStyle(fontSize: 8),
-            ),
-            pw.SizedBox(height: 10),
-            pw.Container(
-              padding: const pw.EdgeInsets.all(7),
-              decoration: pw.BoxDecoration(
-                border: pw.Border.all(color: PdfColors.blue200),
-                borderRadius: pw.BorderRadius.circular(4),
-              ),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Row(
-                    children: [
-                      pw.Expanded(
-                        child: pw.Text(
-                          'Paciente: ${patient['first_name']} ${patient['last_name']}',
-                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                        ),
-                      ),
-                      pw.Text(
-                        'Fecha y hora: ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')} · ${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}',
-                      ),
-                    ],
-                  ),
-                  if (patientMeta.isNotEmpty) ...[
-                    pw.SizedBox(height: 3),
-                    pw.Text(
-                      patientMeta.join(' · '),
-                      style: const pw.TextStyle(fontSize: 8.5),
-                    ),
-                  ],
-                  if (vitalParts.isNotEmpty) ...[
-                    pw.SizedBox(height: 4),
-                    pw.Text(
-                      'Signos vitales: ${vitalParts.join(' · ')}',
-                      style: const pw.TextStyle(fontSize: 8.2),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            if (diagnosis.trim().isNotEmpty) ...[
-              pw.SizedBox(height: 7),
-              pw.Text(
-                'Diagnóstico: $diagnosis',
-                style: const pw.TextStyle(fontSize: 9),
-              ),
-            ],
-            pw.SizedBox(height: 10),
-            pw.Text(
-              'Rx  PRESCRIPCIÓN MÉDICA',
-              style: pw.TextStyle(
-                fontSize: 13,
-                fontWeight: pw.FontWeight.bold,
-                color: PdfColors.blue900,
-              ),
-            ),
-            pw.SizedBox(height: 7),
-            ...medications.asMap().entries.map((entry) {
-              final m = entry.value;
-              final details = <String>[
-                if ((m['presentation'] ?? '').trim().isNotEmpty)
-                  m['presentation']!.trim(),
-                if ((m['dose'] ?? '').trim().isNotEmpty)
-                  'Dosis: ${m['dose']!.trim()}',
-                if ((m['route'] ?? '').trim().isNotEmpty)
-                  'Vía: ${m['route']!.trim()}',
-                if ((m['frequency'] ?? '').trim().isNotEmpty)
-                  'Frecuencia: ${m['frequency']!.trim()}',
-                if ((m['duration'] ?? '').trim().isNotEmpty)
-                  'Duración: ${m['duration']!.trim()}',
-              ];
-              return pw.Container(
-                margin: const pw.EdgeInsets.only(bottom: 7),
-                padding: const pw.EdgeInsets.all(7),
-                decoration: pw.BoxDecoration(
-                  border: pw.Border.all(color: PdfColors.blue100),
-                  borderRadius: pw.BorderRadius.circular(4),
-                ),
-                child: pw.Row(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Container(
-                      width: 22,
-                      child: pw.Text(
-                        '${entry.key + 1}.',
-                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                      ),
-                    ),
-                    pw.Expanded(
-                      child: pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        children: [
-                          pw.Text(
-                            m['name'] ?? '',
-                            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                          ),
-                          if (details.isNotEmpty)
-                            pw.Text(
-                              details.join(' · '),
-                              style: const pw.TextStyle(fontSize: 9),
-                            ),
-                          if ((m['instructions'] ?? '').trim().isNotEmpty)
-                            pw.Padding(
-                              padding: const pw.EdgeInsets.only(top: 3),
-                              child: pw.Text(
-                                m['instructions']!.trim(),
-                                style: const pw.TextStyle(fontSize: 9),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }),
-            if (generalInstructions.trim().isNotEmpty)
-              section('Indicaciones generales', generalInstructions),
-            pw.Spacer(),
-            pw.Row(
-              crossAxisAlignment: pw.CrossAxisAlignment.end,
-              children: [
-                if (contact.length >= 10 && contact.length <= 15)
-                  pw.Column(
-                    children: [
-                      pw.BarcodeWidget(
-                        width: 68,
-                        height: 68,
-                        barcode: pw.Barcode.qrCode(),
-                        data: 'https://wa.me/$contact',
-                      ),
-                      pw.Text(
-                        'WhatsApp',
-                        style: const pw.TextStyle(fontSize: 7),
-                      ),
-                    ],
-                  ),
-                pw.Spacer(),
-                pw.Column(
-                  children: [
-                    pw.Container(
-                      width: 195,
-                      decoration: const pw.BoxDecoration(
-                        border: pw.Border(top: pw.BorderSide()),
-                      ),
-                    ),
-                    pw.SizedBox(height: 3),
-                    pw.Text(
-                      '${author['doctor'] ?? 'Médico responsable sin registrar'}',
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-                    ),
-                    pw.Text(
-                      '${author['profession'] ?? ''} · Cédula ${author['license'] ?? ''}',
-                      style: const pw.TextStyle(fontSize: 8),
-                    ),
-                    pw.Text(
-                      'Firma autógrafa pendiente · impresión sin firma electrónica',
-                      style: const pw.TextStyle(fontSize: 8),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-    await Printing.layoutPdf(onLayout: (_) => doc.save());
+    if (record == null) throw const FormatException('Guarda la receta antes de imprimir.');
+    final bytes = await buildClinicalPdf(title: 'Receta médica', patient: patient, fields: [], record: record);
+    await Printing.layoutPdf(onLayout: (_) async => bytes);
   }
 }

@@ -1,3 +1,4 @@
+import 'clinical_pdf_signature.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -73,12 +74,18 @@ class ClinicalSignatureService {
       password = await showDialog<String>(context: context, builder: (_) => const ClinicalSignaturePassword());
       if (password == null || !context.mounted) return null;
       stage = 'Generar PDF';
-      final pdf = await PdfService.buildClinicalPdf(title: title, patient: patient, record: record, fields: clinicalFields(record), signatureCopy: true);
+      final signingDate = DateTime.now().toUtc();
+      final embedded = record['type'] == 'Receta';
+      final pdf = await PdfService.buildClinicalPdf(title: title, patient: patient, record: record, fields: clinicalFields(record), signatureCopy: true, signerName: parsed.name, certificate: certificate, signedAt: signingDate, embeddedSigner: !embedded ? null : (data) async {
+        final signed = await nativeSign(data, certificate, key!, password!, 'Integrar firma al PDF');
+        if (signed['valid'] != true) throw const FormatException('Firma integrada no válida.');
+        return signed['cms'] as Uint8List;
+      });
       stage = 'Firmar PDF';
       final result = await nativeSign(pdf, certificate, key, password!, stage);
       if (result['valid'] != true) throw const FormatException('La firma no pasó la verificación.');
       final cms = result['cms'] as Uint8List;
-      final payload = <String, dynamic>{'format': 'angel-medical-signed-pdf-v1', 'table': table, 'record_id': record['id'], 'patient_id': patient['id'], 'record_sha256': clinicalRecordHash(record), 'pdf_sha256': sha256.convert(pdf).toString(), 'pdf': base64Encode(pdf), 'cms': base64Encode(cms), 'certificate': base64Encode(certificate), 'signed_at_device': DateTime.now().toUtc().toIso8601String(), 'signer_name': parsed.name, 'signer_rfc': parsed.rfc, 'certificate_serial': parsed.serial, 'trust_verified': false, 'revocation_verified': false, 'trusted_timestamp': false};
+      final payload = <String, dynamic>{'format': 'angel-medical-signed-pdf-v1', 'table': table, 'record_id': record['id'], 'patient_id': patient['id'], 'record_sha256': clinicalRecordHash(record), 'pdf_sha256': sha256.convert(pdf).toString(), 'pdf': base64Encode(pdf), 'cms': base64Encode(cms), 'certificate': base64Encode(certificate), 'signed_at_device': signingDate.toIso8601String(), 'signer_name': parsed.name, 'signer_rfc': parsed.rfc, 'certificate_serial': parsed.serial, 'trust_verified': false, 'revocation_verified': false, 'trusted_timestamp': false};
       final manifest = Uint8List.fromList(utf8.encode(jsonEncode(canonicalValue({
         for (final field in signatureBoundFields) field: payload[field],
       }))));
@@ -131,7 +138,21 @@ class ClinicalSignatureService {
     final binding = Map<String, dynamic>.from((await signatureChannel.invokeMethod<Map>('verify', {'data': manifest, 'cms': base64Decode('${payload['manifest_cms']}')}))!);
     if (result['valid'] != true || binding['valid'] != true ||
         sha256.convert(result['certificate'] as Uint8List).toString() != sha256.convert(binding['certificate'] as Uint8List).toString()) throw const FormatException('Firma o vínculo del registro no válido.');
+    if (latin1.decode(pdf).contains('/ByteRange')) {
+      final parts = embeddedPdfParts(pdf);
+      final integrated = Map<String, dynamic>.from((await signatureChannel.invokeMethod<Map>('verify', {'data': parts.data, 'cms': parts.cms}))!);
+      if (integrated['valid'] != true || sha256.convert(integrated['certificate'] as Uint8List).toString() != sha256.convert(result['certificate'] as Uint8List).toString()) throw const FormatException('Firma integrada no válida.');
+    }
     return result;
+  }
+  static Future<void> sharePdf(Map<String, dynamic> payload) async {
+    await verify(payload);
+    if (!latin1.decode(base64Decode('${payload['pdf']}')).contains('/ByteRange')) throw const FormatException('Esta versión usa firma separada; exporta el paquete completo.');
+    final directory = await Directory('${(await getTemporaryDirectory()).path}/angel_recipe_${DateTime.now().microsecondsSinceEpoch}').create();
+    final file = File('${directory.path}/Receta_firmada.pdf');
+    await file.writeAsBytes(base64Decode('${payload['pdf']}'), flush: true);
+    try { await Share.shareXFiles([XFile(file.path)], text: 'Receta con firma digital integrada.'); }
+    finally { if (await directory.exists()) await directory.delete(recursive: true); }
   }
   static Future<void> export(Map<String, dynamic> payload) async {
     final result = await verify(payload);
@@ -142,7 +163,7 @@ class ClinicalSignatureService {
     add('certificado.cer', result['certificate'] as Uint8List);
     add('registro.amfirma', utf8.encode(jsonEncode(payload)));
     add('manifest.json', base64Decode('${payload['manifest']}')); add('manifest.json.p7s', base64Decode('${payload['manifest_cms']}'));
-    add('LEEME.txt', utf8.encode('Firma CMS/PKCS#7 separada del PDF. Conservar ambos archivos.\nVerificación de integridad con OpenSSL:\nopenssl cms -verify -binary -inform DER -in nota.pdf.p7s -content nota.pdf -noverify -out /dev/null\n-noverify verifica la firma matemática, no la confianza SAT ni la revocación.\nLa fecha de la firma usa el reloj del dispositivo y no un sello de tiempo confiable.\nEl manifiesto firmado vincula la huella del PDF, la versión de la nota y la fecha declarada. Verificar también manifest.json con manifest.json.p7s.'));
+    add('LEEME.txt', utf8.encode('Recetas nuevas: firma CMS integrada en el PDF, verificable en un lector compatible. El QR contiene referencias, no una validación SAT. También se incluye firma separada y manifiesto. Documentos anteriores: conservar PDF y .p7s juntos.\nVerificación de integridad con OpenSSL:\nopenssl cms -verify -binary -inform DER -in nota.pdf.p7s -content nota.pdf -noverify -out /dev/null\n-noverify verifica la firma matemática, no la confianza SAT ni la revocación.\nLa fecha de la firma usa el reloj del dispositivo y no un sello de tiempo confiable.\nEl manifiesto firmado vincula la huella del PDF, la versión de la nota y la fecha declarada. Verificar también manifest.json con manifest.json.p7s.'));
     final directory = await Directory('${(await getTemporaryDirectory()).path}/angel_signature_${DateTime.now().microsecondsSinceEpoch}').create();
     final file = File('${directory.path}/Nota_firmada.zip'); await file.writeAsBytes(ZipEncoder().encode(archive)!, flush: true);
     try { await Share.shareXFiles([XFile(file.path)], text: 'PDF y firma separada. Confianza y revocación SAT pendientes de verificar.'); }

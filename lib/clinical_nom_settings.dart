@@ -29,6 +29,7 @@ class _NomSettingsState extends State<NomSettings> {
     for (final k in nomProfileLabels.keys) k: TextEditingController(),
   };
   String? logoBase64;
+  String? secondaryLogoBase64;
   Map<String, dynamic>? certificate;
   bool ready = false, busy = false;
   String? error;
@@ -48,6 +49,7 @@ class _NomSettingsState extends State<NomSettings> {
         'establishment_type': 'Consultorio médico',
       };
       logoBase64 = saved['logo_base64'] as String?;
+      secondaryLogoBase64 = saved['secondary_logo_base64'] as String?;
       if (saved['certificate_import'] is Map)
         certificate = Map<String, dynamic>.from(saved['certificate_import']);
       for (final e in fields.entries) {
@@ -127,7 +129,7 @@ class _NomSettingsState extends State<NomSettings> {
     }
   }
 
-  Future<void> chooseLogo() async {
+  Future<void> chooseLogo({bool secondary = false}) async {
     try {
       final pick = await FilePicker.platform.pickFiles(
         type: FileType.custom,
@@ -149,7 +151,7 @@ class _NomSettingsState extends State<NomSettings> {
           bytes[2] == 255;
       if (!png && !jpg)
         throw const FormatException('El archivo no es PNG/JPG válido');
-      if (mounted) setState(() => logoBase64 = base64Encode(bytes));
+      if (mounted) setState(() { if (secondary) {secondaryLogoBase64 = base64Encode(bytes);} else {logoBase64 = base64Encode(bytes);} });
     } catch (e) {
       if (mounted) clinicalMessage(context, 'No se pudo cargar el logo: $e');
     }
@@ -160,6 +162,7 @@ class _NomSettingsState extends State<NomSettings> {
     final data = {
       for (final e in fields.entries) e.key: e.value.text.trim(),
       if (logoBase64 != null) 'logo_base64': logoBase64!,
+      if (secondaryLogoBase64 != null) 'secondary_logo_base64': secondaryLogoBase64!,
       if (certificate != null) 'certificate_import': certificate!,
     };
     final missing = profileMissingFields(data).join(', ');
@@ -258,7 +261,7 @@ class _NomSettingsState extends State<NomSettings> {
                   spacing: 8,
                   children: [
                     OutlinedButton.icon(
-                      onPressed: chooseLogo,
+                      onPressed: () => chooseLogo(),
                       icon: const Icon(Icons.image_outlined),
                       label: const Text('Elegir mi logo'),
                     ),
@@ -269,6 +272,9 @@ class _NomSettingsState extends State<NomSettings> {
                       ),
                   ],
                 ),
+                if (secondaryLogoBase64 != null) Image.memory(base64Decode(secondaryLogoBase64!), height: 70, errorBuilder: (_, error, stack) => const Text('Cambia el segundo logo')),
+                OutlinedButton.icon(onPressed: () => chooseLogo(secondary: true), icon: const Icon(Icons.image_outlined), label: const Text('Elegir logo del establecimiento')),
+                if (secondaryLogoBase64 != null) TextButton(onPressed: () => setState(() => secondaryLogoBase64 = null), child: const Text('Quitar logo del establecimiento')),
                 const SizedBox(height: 12),
                 for (final e in fields.entries)
                   Padding(

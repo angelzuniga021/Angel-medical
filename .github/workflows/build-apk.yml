@@ -47,6 +47,14 @@ jobs:
           python checks/check_migration.py
           python checks/check_nom_migration.py
           python checks/check_catalog_bootstrap.py
+      - name: Revisar recetas PDF
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y poppler-utils
+          pdfsig recipe-fixture/signed.pdf
+          pdfsig recipe-fixture/signed.pdf | grep "Signature is Valid"
+          pdftoppm -scale-to 1100 -png recipe-fixture/signed.pdf recipe-fixture/signed
+          pdftoppm -f 1 -singlefile -scale-to 1100 -png recipe-fixture/long.pdf recipe-fixture/long
       - name: Verificar firma nativa e interoperabilidad CMS
         env:
           ANGEL_FIXTURE_DIR: ${{ github.workspace }}/native-fixture
@@ -73,4 +81,9 @@ jobs:
         with:
           name: Angel-Medical-${{ inputs.modo || 'comunidad' }}-${{ github.run_number }}
           path: entrega/
+          retention-days: 14
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Revision-recetas-${{ github.run_number }}
+          path: recipe-fixture/
           retention-days: 14

@@ -70,6 +70,12 @@ class _ClinicalSignaturePanelState extends State<ClinicalSignaturePanel> {
     catch (_) { if (mounted) clinicalMessage(context, 'No se pudo verificar o exportar la firma.'); }
     finally { if (mounted) setState(() => busy = false); }
   }
+  Future<void> sharePdf() async {
+    setState(() => busy = true);
+    try { await ClinicalSignatureService.sharePdf(current!); }
+    catch (e) { if (mounted) clinicalMessage(context, e is FormatException ? e.message : 'No se pudo compartir el PDF.'); }
+    finally { if (mounted) setState(() => busy = false); }
+  }
   Map<String, dynamic>? get current {
     for (final payload in signatures) { if (payload['record_sha256'] == clinicalRecordHash(widget.record)) return payload; }
     return null;
@@ -90,6 +96,7 @@ class _ClinicalSignaturePanelState extends State<ClinicalSignaturePanel> {
       trailing: IconButton(tooltip: 'Exportar PDF y firmas', onPressed: busy ? null : () => export(payload), icon: const Icon(Icons.ios_share)),
     ),
     FilledButton.tonalIcon(onPressed: busy || loading ? null : current == null ? sign : () => export(current!), icon: Icon(current == null ? Icons.draw_outlined : Icons.ios_share), label: Text(current == null ? 'Firmar esta versión' : 'Exportar versión firmada')),
+    if (current != null && latin1.decode(base64Decode('${current!['pdf']}')).contains('/ByteRange')) FilledButton.icon(onPressed: busy || loading ? null : sharePdf, icon: const Icon(Icons.picture_as_pdf_outlined), label: const Text('Compartir PDF firmado')),
     if (current != null) ExpansionTile(title: const Text('Añadir otra firma a esta versión'), children: [TextButton(onPressed: busy || loading ? null : sign, child: const Text('Firmar nuevamente'))]),
     OutlinedButton.icon(onPressed: busy ? null : inspect, icon: const Icon(Icons.event_available_outlined), label: const Text('Revisar vigencia del .cer')),
   ]);

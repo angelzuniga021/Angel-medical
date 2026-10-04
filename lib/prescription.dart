@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'clinical_store.dart';
 import 'clinical_record_view.dart';
 import 'clinical_nom_settings.dart';
@@ -181,9 +183,10 @@ class _PrescriptionFormState extends State<PrescriptionForm> {
         'dose',
         'route',
         'frequency',
+        'duration',
       ].any((k) => (m[k] ?? '').trim().isEmpty)) {
         throw const FormatException(
-          'Cada medicamento requiere dosis, vía y periodicidad',
+          'Cada medicamento requiere dosis, vía, periodicidad y duración',
         );
       }
     }
@@ -194,6 +197,7 @@ class _PrescriptionFormState extends State<PrescriptionForm> {
         'type': 'Receta',
         'title': 'Receta médica',
         'content': content,
+        'nom_rx_data': jsonEncode({'medications': validMeds, 'diagnosis': diagnosis.text.trim(), 'recommendations': general.text.trim(), 'content_sha256': sha256.convert(utf8.encode(content)).toString()}),
         '_encounter_at': now,
       },
       draftKey: 'prescription:${widget.patient['id']}:$now',
@@ -253,7 +257,7 @@ class _PrescriptionFormState extends State<PrescriptionForm> {
           Text(
             latestVitals == null
                 ? 'Sin signos vitales previos cargados'
-                : 'La receta incluirá los últimos signos vitales disponibles.',
+                : 'Los signos vitales permanecen en la consulta; la receta muestra los datos esenciales.',
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 12),
