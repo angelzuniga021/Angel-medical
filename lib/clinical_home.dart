@@ -1,3 +1,5 @@
+import 'clinical_profile.dart';
+import 'clinical_nom.dart';
 import 'clinical_cie_screen.dart';
 import 'clinical_nom_settings.dart';
 import 'services.dart';
@@ -20,6 +22,7 @@ class ClinicalHome extends StatefulWidget {
 class _ClinicalHomeState extends State<ClinicalHome> {
   int patients = 0, notes = 0, admissions = 0, drafts = 0, catalogCount = 0;
   String? backup, error;
+  List<String> profilePending = [];
   List<Map<String, Object?>> appointments = [], pending = [];
   bool loading = true;
   @override
@@ -42,6 +45,7 @@ class _ClinicalHomeState extends State<ClinicalHome> {
               )).first['n']
               as int);
       backup = await AppDb.instance.getSetting('last_backup_at');
+      profilePending = profileMissingFields(decodeNom(await AppDb.instance.getSetting('nom_profile')));
       final now = DateTime.now();
       final start = DateTime(now.year, now.month, now.day).toIso8601String();
       appointments = await db.rawQuery(
@@ -143,6 +147,11 @@ class _ClinicalHomeState extends State<ClinicalHome> {
               ),
             ),
             const SizedBox(height: 16),
+            if (profilePending.isNotEmpty)
+              clinicalPanel(context, 'Completar perfil del médico', [
+                Text('Conservamos tus datos. Pendiente: ${profilePending.join(', ')}'),
+                TextButton.icon(onPressed: () => route(const NomSettings()), icon: const Icon(Icons.manage_accounts_outlined), label: const Text('Revisar datos guardados')),
+              ]),
             if (loading) const LinearProgressIndicator(),
             if (error != null) Text(error!),
             LayoutBuilder(
@@ -469,7 +478,7 @@ class _ClinicalToolsState extends State<ClinicalTools> {
             ),
         ]),
         const ListTile(
-          title: Text('Angel Medical 2.6.0'),
+          title: Text('Angel Medical 2.7.0'),
           subtitle: Text(
             'Uso local · Expediente cifrado · Sincronización entre dispositivos no incluida',
           ),

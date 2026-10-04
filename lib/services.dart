@@ -1,3 +1,4 @@
+import 'clinical_profile.dart';
 import 'clinical_catalog.dart';
 import 'clinical_guidance.dart';
 
@@ -290,6 +291,7 @@ class BackupService {
           await File(pick.files.single.path!).readAsBytes();
       final payload = await _decodeBackup(utf8.decode(bytes), password);
       final expected = await validatePayload(payload);
+      final localProfile = await AppDb.instance.getSetting('nom_profile');
       currentPath = await AppDb.instance.path;
       oldKey = await AppDb.instance.dbKey;
       final temp = File('$currentPath.restore_tmp');
@@ -314,6 +316,12 @@ class BackupService {
       for (final entry in expected.entries) {
         if (await AppDb.instance.count(entry.key) != entry.value)
           throw StateError('El conteo restaurado no coincide');
+      }
+      final preserve = localProfileToPreserve(localProfile, await AppDb.instance.getSetting('nom_profile'));
+      // Keep the local doctor only if the older backup lacks saved identity.
+      if (preserve != null) {
+        await AppDb.instance.setSetting('nom_profile', preserve);
+        await AppDb.instance.audit('PRESERVE_PROFILE_ON_RESTORE', 'Perfil local conservado al restaurar respaldo sin identidad');
       }
       await AppDb.instance.setSetting(
         'last_restore_at',

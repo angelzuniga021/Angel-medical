@@ -1,3 +1,4 @@
+import 'clinical_note_review.dart';
 import 'clinical_cie_screen.dart';
 import 'clinical_catalog.dart';
 import 'clinical_guidance.dart';
@@ -337,6 +338,10 @@ class _ClinicalEditorState extends State<ClinicalEditor>
       return;
     }
     if (!mounted) return;
+    final approved = await showDialog<bool>(context: context,
+      builder: (_) => ClinicalNoteReview(patientName: '${widget.patient['first_name']} ${widget.patient['last_name']}',
+        input: {for (final key in visibleKeys) key: fields[key]?.text ?? '', 'encounter_date': clinicalDate(encounter.toIso8601String())}));
+    if (approved != true || !mounted) return;
     setState(() => busy = true);
     try {
       await persist();
@@ -796,6 +801,12 @@ class _ClinicalEditorState extends State<ClinicalEditor>
                         guideStep = 0;
                       }),
                     ),
+                    if (guided) ...[
+                      Text('Paso ${guideStep + 1} de ${sections.length}', style: Theme.of(context).textTheme.labelLarge),
+                      const SizedBox(height: 6),
+                      LinearProgressIndicator(value: (guideStep + 1) / sections.length),
+                      const SizedBox(height: 12),
+                    ],
                     if (guided)
                       Wrap(
                         spacing: 8,

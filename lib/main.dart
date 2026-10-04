@@ -1,3 +1,4 @@
+import 'clinical_profile.dart';
 import 'clinical_birthdate.dart';
 import 'clinical_nom_settings.dart';
 import 'clinical_nom.dart';
@@ -128,16 +129,16 @@ class _DoctorSetupGateState extends State<DoctorSetupGate> {
 
   Future<void> load() async {
     try {
-      final profile = decodeNom(await AppDb.instance.getSetting('nom_profile'));
-      final ready = [
-        'doctor',
-        'license',
-        'profession',
-        'establishment',
-        'establishment_type',
-        'address',
-        'place',
-      ].every((k) => '${profile[k] ?? ''}'.trim().isNotEmpty);
+      var profile = decodeNom(await AppDb.instance.getSetting('nom_profile'));
+      if (profile.isEmpty) {
+        final previous = await AppDb.instance.getSetting('nom_profile_previous');
+        if (hasExistingClinicalProfile(decodeNom(previous))) {
+          await AppDb.instance.setSetting('nom_profile', previous!);
+          await AppDb.instance.audit('RECOVER_SAVED_PROFILE', 'Perfil anterior recuperado de la misma base');
+          profile = decodeNom(previous);
+        }
+      }
+      final ready = hasExistingClinicalProfile(profile);
       if (mounted)
         setState(() {
           configured = ready;

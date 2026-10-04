@@ -1,3 +1,4 @@
+import 'clinical_patient_design.dart';
 import 'package:flutter/material.dart';
 
 import 'db.dart';
@@ -161,10 +162,15 @@ class _ModernPatientHubState extends State<ModernPatientHub> {
   );
   Widget summary() {
     final p = patient!;
+    final assessments = events.where((e) => {'consultations', 'emergencies', 'hospitalizations', 'progress_notes'}.contains(e['table'])).toList();
+    final lastAssessment = assessments.isEmpty ? null : assessments.first;
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
         actions(),
+        const SizedBox(height: 20),
+        ClinicalPatientOverview(patient: p, lastAssessment: lastAssessment,
+          onOpenAssessment: lastAssessment == null ? null : () => open(lastAssessment)),
         const SizedBox(height: 12),
         if (drafts.isNotEmpty)
           clinicalPanel(context, 'Borradores pendientes · ${drafts.length}', [
@@ -183,10 +189,10 @@ class _ModernPatientHubState extends State<ModernPatientHub> {
             'dob': 'Nacimiento',
             'sex': 'Sexo',
             'blood_type': 'Grupo sanguíneo',
-            'personal_history': 'Antecedentes personales',
+            
             'family_history': 'Antecedentes familiares',
             'surgical_history': 'Antecedentes quirúrgicos',
-            'chronic_meds': 'Medicación habitual',
+            
             'notes': 'Notas generales',
           }.entries)
             ListTile(
@@ -242,81 +248,22 @@ class _ModernPatientHubState extends State<ModernPatientHub> {
               }, query),
         )
         .toList();
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              TextField(
-                decoration: const InputDecoration(
-                  labelText: 'Buscar en el expediente',
-                  prefixIcon: Icon(Icons.search),
-                ),
-                onChanged: (v) => setState(() => query = v),
-              ),
-              const SizedBox(height: 8),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    for (final e in {'Todos': 'Todos', ...noteNames}.entries)
-                      Padding(
-                        padding: const EdgeInsets.only(right: 6),
-                        child: ChoiceChip(
-                          label: Text(e.value),
-                          selected: kind == e.key,
-                          onSelected: (_) => setState(() => kind = e.key),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              Row(
-                children: [
-                  Text('${visible.length} de ${events.length} registros'),
-                  const Spacer(),
-                  IconButton(
-                    tooltip: 'Exportar selección',
-                    onPressed: () => route(
-                      ClinicalExport(patient: patient!, events: events),
-                    ),
-                    icon: const Icon(Icons.picture_as_pdf_outlined),
-                  ),
-                ],
-              ),
-              if (busy) const LinearProgressIndicator(),
-            ],
-          ),
-        ),
-        Expanded(
-          child: visible.isEmpty
-              ? const Center(child: Text('Sin registros para esta búsqueda'))
-              : ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: visible.length,
-                  itemBuilder: (context, i) {
-                    final e = visible[i];
-                    return Card(
-                      child: ListTile(
-                        leading: const Icon(Icons.article_outlined),
-                        title: Text(
-                          '${e['type']} · ${clinicalDate(e['date'])}',
-                        ),
-                        subtitle: Text(
-                          '${e['text'] ?? ''}',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: busy ? null : () => open(e),
-                      ),
-                    );
-                  },
-                ),
-        ),
-      ],
-    );
+    return CustomScrollView(slivers: [
+      SliverToBoxAdapter(child: Padding(padding: const EdgeInsets.all(16), child: Column(children: [
+        TextField(decoration: const InputDecoration(labelText: 'Buscar en todo el expediente', prefixIcon: Icon(Icons.search)), onChanged: (v) => setState(() => query = v)),
+        const SizedBox(height: 12),
+        SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: [
+          for (final entry in {'Todos': 'Todos', ...noteNames}.entries)
+            Padding(padding: const EdgeInsets.only(right: 8), child: ChoiceChip(label: Text(entry.value), selected: kind == entry.key, onSelected: (_) => setState(() => kind = entry.key))),
+        ])),
+        Row(children: [Expanded(child: Text('${visible.length} de ${events.length} registros')),
+          IconButton(tooltip: 'Exportar selección', onPressed: () => route(ClinicalExport(patient: patient!, events: events)), icon: const Icon(Icons.picture_as_pdf_outlined)),
+        ]),
+        if (busy) const LinearProgressIndicator(),
+      ]))),
+      if (visible.isEmpty) const SliverToBoxAdapter(child: Padding(padding: EdgeInsets.all(24), child: Text('Sin registros para esta búsqueda')))
+      else SliverPadding(padding: const EdgeInsets.symmetric(horizontal: 12), sliver: SliverList.builder(itemCount: visible.length, itemBuilder: (context, i) => ClinicalTimelineTile(event: visible[i], onTap: busy ? null : () => open(visible[i])))),
+    ]);
   }
 
   Widget treatment() => ListView(
@@ -387,7 +334,6 @@ class _ModernPatientHubState extends State<ModernPatientHub> {
         ),
       );
     final p = patient!;
-    final allergies = '${p['allergies'] ?? ''}'.trim();
     return DefaultTabController(
       length: 6,
       child: Scaffold(
@@ -429,53 +375,7 @@ class _ModernPatientHubState extends State<ModernPatientHub> {
         ),
         body: Column(
           children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(18, 10, 18, 16),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF142F54), Color(0xFF10212D)],
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${p['first_name']} ${p['last_name']}',
-                    style: const TextStyle(
-                      fontSize: 23,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '${events.length} atenciones · ${drafts.length} borradores',
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    allergies.isEmpty
-                        ? 'Alergias: sin registro'
-                        : 'ALERGIAS: $allergies',
-                    style: const TextStyle(
-                      color: Color(0xFFFFC078),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  if (p['is_deceased'] == 1)
-                    const Text(
-                      'PACIENTE FALLECIDO',
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                  if (p['is_archived'] == 1)
-                    const Text(
-                      'EXPEDIENTE ARCHIVADO',
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                ],
-              ),
-            ),
+            ClinicalPatientBanner(patient: p, events: events.length, drafts: drafts.length),
             if (error != null)
               Text(error!, style: const TextStyle(color: Colors.orange)),
             const TabBar(

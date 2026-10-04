@@ -1,3 +1,4 @@
+import 'clinical_profile.dart';
 import 'clinical_certificate.dart';
 
 import 'package:crypto/crypto.dart' show sha256;
@@ -161,19 +162,7 @@ class _NomSettingsState extends State<NomSettings> {
       if (logoBase64 != null) 'logo_base64': logoBase64!,
       if (certificate != null) 'certificate_import': certificate!,
     };
-    final missing =
-        [
-              'doctor',
-              'license',
-              'profession',
-              'establishment',
-              'establishment_type',
-              'address',
-              'place',
-            ]
-            .where((k) => '${data[k] ?? ''}'.trim().isEmpty)
-            .map((k) => nomProfileLabels[k])
-            .join(', ');
+    final missing = profileMissingFields(data).join(', ');
     if (missing.isNotEmpty) {
       clinicalMessage(context, 'Completa: $missing');
       return;
@@ -182,6 +171,13 @@ class _NomSettingsState extends State<NomSettings> {
     try {
       final db = await AppDb.instance.database;
       await db.transaction((tx) async {
+        final previous = await tx.query('app_settings', where: 'setting_key=?', whereArgs: ['nom_profile']);
+        if (previous.isNotEmpty && hasExistingClinicalProfile(decodeNom(previous.single['setting_value']))) {
+          await tx.rawInsert(
+            'INSERT INTO app_settings(setting_key,setting_value) VALUES(?,?) ON CONFLICT(setting_key) DO UPDATE SET setting_value=excluded.setting_value',
+            ['nom_profile_previous', previous.single['setting_value']],
+          );
+        }
         // Uses SQL upsert without deleting the existing configuration row.
         await tx.rawInsert(
           'INSERT INTO app_settings(setting_key,setting_value) VALUES(?,?) ON CONFLICT(setting_key) DO UPDATE SET setting_value=excluded.setting_value',
