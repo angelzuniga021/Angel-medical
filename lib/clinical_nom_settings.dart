@@ -227,7 +227,7 @@ class _NomSettingsState extends State<NomSettings> {
                 ]),
                 clinicalPanel(context, 'Certificado de e.firma', [
                   const Text(
-                    'Importa exclusivamente el archivo público .cer. Se leen datos para confirmar; no se solicita .key ni contraseña y no se firman documentos en esta versión.',
+                    'Importa exclusivamente el archivo público .cer. Se leen datos para confirmar. Aquí no se solicita .key ni contraseña. La firma se realiza desde el detalle de una nota o receta guardada.',
                   ),
                   OutlinedButton.icon(
                     onPressed: importCertificate,
@@ -236,6 +236,8 @@ class _NomSettingsState extends State<NomSettings> {
                   ),
                   if (certificate != null) ...[
                     Text('Certificado leído: ${certificate!["name"]}'),
+                    if (DateTime.tryParse('${certificate!["not_before"]}') != null && DateTime.tryParse('${certificate!["not_after"]}') != null)
+                      SelectableText(certificateValidityDetails(DateTime.parse('${certificate!["not_before"]}'), DateTime.parse('${certificate!["not_after"]}'), DateTime.now())),
                     const Text(
                       'Identidad criptográfica y revocación no verificadas.',
                     ),
@@ -281,7 +283,7 @@ class _NomSettingsState extends State<NomSettings> {
                     ),
                   ),
                 const Text(
-                  'Las notas se imprimen para firma autógrafa. No se incluye firma electrónica ni certificación NOM-024.',
+                  'Puedes imprimir para firma autógrafa o firmar electrónicamente el PDF desde el registro guardado. La firma local no verifica confianza SAT ni revocación. No es certificación NOM-024.',
                 ),
                 const SizedBox(height: 16),
                 FilledButton(

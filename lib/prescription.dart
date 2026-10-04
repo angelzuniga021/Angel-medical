@@ -1,4 +1,5 @@
 import 'clinical_store.dart';
+import 'clinical_record_view.dart';
 import 'clinical_nom_settings.dart';
 
 import 'clinical_ui.dart';
@@ -106,19 +107,15 @@ class _PrescriptionFormState extends State<PrescriptionForm> {
     setState(() {});
   }
 
-  Future<void> saveAndPrint() async {
+  Future<void> saveAndPrint({bool review = false}) async {
     if (saving) return;
     if (savedId != null) {
-      clinicalMessage(
-        context,
-        'La receta ya está guardada. Ábrela desde el historial para imprimir o corregir.',
-      );
-      Navigator.pop(context);
+      await openSavedRecipe();
       return;
     }
     setState(() => saving = true);
     try {
-      await saveOnceAndPrint();
+      await saveOnceAndPrint(review: review);
     } catch (e) {
       if (mounted)
         clinicalMessage(
@@ -130,7 +127,15 @@ class _PrescriptionFormState extends State<PrescriptionForm> {
     }
   }
 
-  Future<void> saveOnceAndPrint() async {
+  Future<void> openSavedRecipe() async {
+    final record = await AppDb.instance.one('documents', savedId!);
+    if (record == null) throw const FormatException('No se encontró la receta guardada');
+    if (!mounted) return;
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => ClinicalRecordView(patient: widget.patient, record: record, title: 'Receta médica', table: 'documents')));
+    if (mounted) Navigator.pop(context);
+  }
+
+  Future<void> saveOnceAndPrint({bool review = false}) async {
     final validMeds = meds
         .map((m) => m.toMap())
         .where((m) => (m['name'] ?? '').trim().isNotEmpty)
@@ -193,6 +198,7 @@ class _PrescriptionFormState extends State<PrescriptionForm> {
       },
       draftKey: 'prescription:${widget.patient['id']}:$now',
     );
+    if (review) { await openSavedRecipe(); return; }
     final saved = await AppDb.instance.one('documents', savedId!);
     await AppDb.instance.audit('PRINT_PRESCRIPTION', '$savedId');
 
@@ -396,6 +402,12 @@ class _PrescriptionFormState extends State<PrescriptionForm> {
             onPressed: saving ? null : saveAndPrint,
             icon: const Icon(Icons.print_outlined),
             label: const Text('Guardar e imprimir / PDF'),
+          ),
+          const SizedBox(height: 10),
+          FilledButton.tonalIcon(
+            onPressed: saving ? null : () => saveAndPrint(review: true),
+            icon: const Icon(Icons.draw_outlined),
+            label: const Text('Guardar y revisar / firmar'),
           ),
           const SizedBox(height: 25),
         ],

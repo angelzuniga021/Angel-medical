@@ -63,6 +63,28 @@ class CertificateProfile {
       !now.toUtc().isBefore(notBefore) && !now.toUtc().isAfter(notAfter);
 }
 
+String certificateDateDisplay(DateTime value) {
+  final d = value.toUtc();
+  String two(int n) => n.toString().padLeft(2, '0');
+  return '${two(d.day)}/${two(d.month)}/${d.year} ${two(d.hour)}:${two(d.minute)}:${two(d.second)} UTC';
+}
+
+String certificateDateStatus(DateTime start, DateTime end, DateTime now) {
+  if (now.toUtc().isBefore(start.toUtc())) return 'La vigencia aún no inicia';
+  if (now.toUtc().isAfter(end.toUtc())) return 'Certificado vencido';
+  return 'Dentro del periodo de vigencia';
+}
+
+String certificateValidityDetails(DateTime start, DateTime end, DateTime now) =>
+    '${certificateDateStatus(start, end, now)}\n'
+    'Inicio: ${certificateDateDisplay(start)}\n'
+    'Vencimiento: ${certificateDateDisplay(end)}\n'
+    'Reloj del teléfono: ${certificateDateDisplay(now)}\n\n'
+    'Todas las fechas se muestran en UTC para compararlas. Si el reloj está incorrecto, activa fecha y hora automáticas en Ajustes del teléfono. '
+    'Si el reloj es correcto y el certificado venció, selecciona el .cer vigente y su .key correspondiente. '
+    'Si no tienes un certificado vigente, debes renovarlo ante el SAT. No cambies la fecha para eludir la vigencia. '
+    'Este diagnóstico revisa fechas; no verifica confianza SAT ni revocación.';
+
 Map<int, String> _name(DerNode node) {
   if (node.tag != 48) throw const FormatException('Nombre X.509 inválido');
   final out = <int, String>{};

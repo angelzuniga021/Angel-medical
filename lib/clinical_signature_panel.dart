@@ -45,6 +45,13 @@ class _ClinicalSignaturePanelState extends State<ClinicalSignaturePanel> {
     } catch (e) { if (mounted) clinicalMessage(context, e is FormatException ? e.message : 'No se pudo firmar. Comprueba los archivos, contraseña y vigencia.'); }
     finally { if (mounted) setState(() => busy = false); }
   }
+  Future<void> inspect() async {
+    if (busy) return;
+    setState(() => busy = true);
+    try { await ClinicalSignatureService.inspectCertificate(context); }
+    catch (e) { if (mounted) clinicalMessage(context, e is FormatException ? e.message : 'No se pudo leer el .cer. Selecciona el certificado público, no la clave privada.'); }
+    finally { if (mounted) setState(() => busy = false); }
+  }
   Future<void> export(Map<String, dynamic> payload) async {
     setState(() => busy = true);
     try { await ClinicalSignatureService.export(payload); }
@@ -66,5 +73,6 @@ class _ClinicalSignaturePanelState extends State<ClinicalSignaturePanel> {
       trailing: IconButton(tooltip: 'Exportar PDF y firmas', onPressed: busy ? null : () => export(payload), icon: const Icon(Icons.ios_share)),
     ),
     FilledButton.tonalIcon(onPressed: busy ? null : sign, icon: const Icon(Icons.draw_outlined), label: const Text('Firmar esta versión')),
+    OutlinedButton.icon(onPressed: busy ? null : inspect, icon: const Icon(Icons.event_available_outlined), label: const Text('Revisar vigencia del .cer')),
   ]);
 }

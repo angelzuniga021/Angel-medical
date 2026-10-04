@@ -484,7 +484,7 @@ class _ClinicalToolsState extends State<ClinicalTools> {
             ),
         ]),
         const ListTile(
-          title: Text('Angel Medical 2.8.0'),
+          title: Text('Angel Medical 2.8.1'),
           subtitle: Text(
             'Uso local · Expediente cifrado · Sincronización entre dispositivos no incluida',
           ),

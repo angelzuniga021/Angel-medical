@@ -21,6 +21,24 @@ import 'services.dart';
 const signatureChannel = MethodChannel('angel_medical/signature');
 
 class ClinicalSignatureService {
+  static Future<void> showCertificate(BuildContext context, CertificateProfile certificate, DateTime now) async {
+    await showDialog<void>(context: context, builder: (ctx) => AlertDialog(
+      title: const Text('Vigencia del certificado seleccionado'),
+      scrollable: true,
+      content: SelectableText('Titular: ${certificate.name}\nRFC: ${certificate.rfc}\n\n${certificateValidityDetails(certificate.notBefore, certificate.notAfter, now)}'),
+      actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cerrar'))],
+    ));
+  }
+  static Future<void> inspectCertificate(BuildContext context) async {
+    try {
+      final certificate = await pick('cer');
+      if (certificate == null || !context.mounted) return;
+      final parsed = readCertificate(certificate);
+      await showCertificate(context, parsed, DateTime.now());
+    } finally {
+      try { await FilePicker.platform.clearTemporaryFiles(); } catch (_) { }
+    }
+  }
   static Future<Uint8List?> pick(String extension) async {
     final picked = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: [extension], withData: true);
     if (picked == null) return null;
@@ -36,7 +54,11 @@ class ClinicalSignatureService {
       final profile = decodeNom(await AppDb.instance.getSetting('nom_profile'));
       final rfc = '${profile['rfc'] ?? ''}'.trim().toUpperCase();
       if (rfc.isEmpty || parsed.rfc.isEmpty || parsed.rfc.toUpperCase() != rfc) throw const FormatException('Registra tu RFC en el perfil y utiliza un certificado que corresponda a ese RFC.');
-      if (!parsed.validAt(DateTime.now())) throw const FormatException('Certificado fuera de vigencia según el reloj del dispositivo.');
+      final now = DateTime.now();
+      if (!parsed.validAt(now)) {
+        if (context.mounted) await showCertificate(context, parsed, now);
+        return null;
+      }
       if (!context.mounted) return null;
       final accepted = await clinicalConfirm(context, 'Firmar versión actual', 'Firmante: ${parsed.name}\nRFC: ${parsed.rfc}\n\nLa firma se realiza hoy sobre esta versión; no cambia la fecha ni el autor original de la atención. Se verificará integridad, correspondencia de la clave y fechas. La confianza de la cadena SAT, la revocación y el sello de tiempo confiable no se verifican. Seleccionarás la .key cifrada y su contraseña, que no se guardarán en el expediente.');
       if (!accepted || !context.mounted) return null;
