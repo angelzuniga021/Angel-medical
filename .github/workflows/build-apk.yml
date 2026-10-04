@@ -54,7 +54,7 @@ jobs:
           pdfsig recipe-fixture/signed.pdf
           pdfsig recipe-fixture/signed.pdf | grep "Signature is Valid"
           pdftoppm -scale-to 1100 -png recipe-fixture/signed.pdf recipe-fixture/signed
-          pdftoppm -f 1 -singlefile -scale-to 1100 -png recipe-fixture/long.pdf recipe-fixture/long
+          pdftoppm -scale-to 1100 -png recipe-fixture/long.pdf recipe-fixture/long
       - name: Verificar firma nativa e interoperabilidad CMS
         env:
           ANGEL_FIXTURE_DIR: ${{ github.workspace }}/native-fixture
