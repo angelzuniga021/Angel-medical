@@ -46,6 +46,7 @@ class ClinicalSignatureService {
     if (picked == null) return null;
     if (picked.files.single.size > 128 * 1024) throw const FormatException('Archivo demasiado grande (máximo 128 KB).');
     final bytes = picked.files.single.bytes ?? await File(picked.files.single.path!).readAsBytes();
+    if (bytes.isEmpty) throw const FormatException('El archivo seleccionado está vacío o no pudo leerse. Selecciona el archivo original.');
     return Uint8List.fromList(bytes);
   }
   static Future<Map<String, dynamic>?> sign(BuildContext context, {required String table, required Map<String, Object?> patient, required Map<String, Object?> record, required String title}) async {

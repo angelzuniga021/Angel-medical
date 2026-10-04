@@ -11,7 +11,8 @@ import 'db.dart';
 class ClinicalSignaturePanel extends StatefulWidget {
   final String table, title;
   final Map<String, Object?> patient, record;
-  const ClinicalSignaturePanel({super.key, required this.table, required this.title, required this.patient, required this.record});
+  final ValueChanged<Map<String, dynamic>?>? onCurrentSignature;
+  const ClinicalSignaturePanel({super.key, required this.table, required this.title, required this.patient, required this.record, this.onCurrentSignature});
   @override
   State<ClinicalSignaturePanel> createState() => _ClinicalSignaturePanelState();
 }
@@ -34,8 +35,14 @@ class _ClinicalSignaturePanelState extends State<ClinicalSignaturePanel> {
         if (payload['table'] != widget.table || payload['record_id'] != widget.record['id'] || payload['patient_id'] != widget.patient['id']) throw const FormatException('Firma vinculada a otro registro.');
         next.add(payload);
       }
-      if (mounted) setState(() { signatures = next; error = null; loading = false; });
-    } catch (_) { if (mounted) setState(() { signatures = []; loading = false; error = 'No se pudo verificar alguna firma. No se muestra como válida.'; }); }
+      if (mounted) {
+        setState(() { signatures = next; error = null; loading = false; });
+        widget.onCurrentSignature?.call(current);
+      }
+    } catch (_) { if (mounted) {
+      setState(() { signatures = []; loading = false; error = 'No se pudo verificar alguna firma. No se muestra como válida.'; });
+      widget.onCurrentSignature?.call(null);
+    } }
   }
   Future<void> sign() async {
     if (busy) return;

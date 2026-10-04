@@ -5,6 +5,7 @@ import java.security.PrivateKey;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.*;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
@@ -46,6 +47,7 @@ public final class LocalSigner {
       try { key = new JcaPEMKeyConverter().setProvider(PROVIDER).getPrivateKey(encoded.decryptPrivateKeyInfo(new JceOpenSSLPKCS8DecryptorProviderBuilder().setProvider(PROVIDER).build(password))); }
       catch (Exception e) { throw new Failure("KEY_DECRYPT_FAILED"); }
       if (!(key instanceof RSAPrivateKey) || ((RSAPrivateKey)key).getModulus().bitLength() < 2048) throw new IllegalArgumentException("Se requiere clave RSA de al menos 2048 bits");
+      if (!(cert.getPublicKey() instanceof RSAPublicKey) || !((RSAPrivateKey)key).getModulus().equals(((RSAPublicKey)cert.getPublicKey()).getModulus())) throw new Failure("CERT_KEY_MISMATCH");
       CMSSignedDataGenerator generator = new CMSSignedDataGenerator();
       generator.addSignerInfoGenerator(new JcaSignerInfoGeneratorBuilder(new JcaDigestCalculatorProviderBuilder().setProvider(PROVIDER).build()).build(new JcaContentSignerBuilder("SHA256withRSA").setProvider(PROVIDER).build(key), cert));
       generator.addCertificates(new JcaCertStore(Collections.singletonList(cert)));
@@ -53,7 +55,7 @@ public final class LocalSigner {
       // A mismatched certificate/key must not be saved as a successful signature.
       Map<String,Object> result;
       try { result = verify(data, cms); }
-      catch (Exception e) { throw new Failure("CERT_KEY_MISMATCH"); }
+      catch (Exception e) { throw new Failure("SIGNATURE_FAILED"); }
       if (!Boolean.TRUE.equals(result.get("valid"))) throw new Failure("CERT_KEY_MISMATCH");
       result.put("cms", cms);
       return result;

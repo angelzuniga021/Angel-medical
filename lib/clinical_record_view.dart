@@ -1,5 +1,7 @@
 import 'clinical_body_map.dart';
 import 'clinical_signature_panel.dart';
+import 'clinical_signature.dart';
+import 'package:printing/printing.dart';
 import 'clinical_signature_data.dart';
 import 'dart:convert';
 
@@ -32,6 +34,7 @@ class _ClinicalRecordViewState extends State<ClinicalRecordView> {
   late Map<String, Object?> record;
   List<Map<String, Object?>> revisions = [];
   bool printing = false;
+  Map<String, dynamic>? currentSignature;
   @override
   void initState() {
     super.initState();
@@ -76,7 +79,7 @@ class _ClinicalRecordViewState extends State<ClinicalRecordView> {
         'table': widget.table,
         'id': record['id'],
       }, widget.patient['id'] as int);
-      if (mounted) setState(() => record = next);
+      if (mounted) setState(() { record = next; currentSignature = null; });
       await loadRevisions();
     } catch (_) {
       if (mounted)
@@ -90,6 +93,15 @@ class _ClinicalRecordViewState extends State<ClinicalRecordView> {
   Future<void> printRecord() async {
     setState(() => printing = true);
     try {
+      final signed = currentSignature;
+      if (signed != null) {
+        final fresh = await ClinicalStore.readEvent({'table': widget.table, 'id': record['id']}, widget.patient['id'] as int);
+        if (clinicalRecordHash(fresh) != signed['record_sha256']) throw const FormatException('La versión cambió. Vuelve a abrir la nota antes de imprimir.');
+        await ClinicalSignatureService.verify(signed);
+        final bytes = base64Decode('${signed['pdf']}');
+        await Printing.layoutPdf(onLayout: (_) async => bytes);
+        return;
+      }
       await PdfService.printClinical(
         title: widget.title,
         patient: widget.patient,
@@ -126,7 +138,7 @@ class _ClinicalRecordViewState extends State<ClinicalRecordView> {
             icon: const Icon(Icons.edit_note),
           ),
         IconButton(
-          tooltip: 'Imprimir / PDF',
+          tooltip: currentSignature == null ? 'Imprimir / PDF' : 'Imprimir PDF de la versión firmada',
           onPressed: printing ? null : printRecord,
           icon: const Icon(Icons.print_outlined),
         ),
@@ -143,7 +155,7 @@ class _ClinicalRecordViewState extends State<ClinicalRecordView> {
           if ((nomInput(record)['nom_body_map'] ?? '').isNotEmpty)
             OutlinedButton.icon(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ClinicalBodyMap(initial: nomInput(record)['nom_body_map']!, readOnly: true))), icon: const Icon(Icons.accessibility_new), label: const Text('Ver mapa corporal registrado')),
           if (widget.table != null)
-            ClinicalSignaturePanel(key: ValueKey(clinicalRecordHash(record)), table: widget.table!, title: widget.title, patient: widget.patient, record: record),
+            ClinicalSignaturePanel(key: ValueKey(clinicalRecordHash(record)), table: widget.table!, title: widget.title, patient: widget.patient, record: record, onCurrentSignature: (payload) { if (mounted) setState(() => currentSignature = payload); }),
           if (printing) const LinearProgressIndicator(),
           if (revisions.isNotEmpty)
             clinicalPanel(context, 'Historial de correcciones', [
