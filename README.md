@@ -1,43 +1,33 @@
-# Angel Medical 2.4 — candidata para médicos
+# Ángel Medical 2.8
 
-Consulta [EDICION_PARA_MEDICOS.md](EDICION_PARA_MEDICOS.md) para instalar la firma y compilar la nueva edición para todos. La versión estable de distribución aún requiere la configuración privada de firma y verificación funcional de respaldo y actualización.
+Aplicación Flutter para expediente clínico local cifrado en Android. Cada médico conserva su perfil y su propia base. Esta edición prepara intercambio futuro con PC, pero no incluye todavía una aplicación de escritorio ni sincronización entre dispositivos.
 
-# Angel Medical 2.3 — beta para GitHub
+## Novedades
 
-Proyecto Flutter para una beta privada. Aún no se ha compilado ni probado en Android esta versión. No es una certificación de cumplimiento NOM.
+- Mapa corporal interactivo con vistas anterior/posterior, varias regiones, intensidad opcional y descripción. Se conserva en la nota, revisión, PDF y respaldo.
+- Firma criptográfica local del PDF y su manifiesto con `.cer` y `.key` cifrada. Se exporta el PDF exacto junto con firmas CMS `.p7s`; no es PAdES incrustada. Clave privada y contraseña no se guardan en la base.
+- Revisión de documentación y pendientes normativos. No constituye certificación ni dictamen de cumplimiento NOM.
+- Exportación cifrada `.amx` para un futuro lector en PC, compartible por el menú del sistema, incluido Drive cuando esté disponible. La recuperación actual sigue usando `.ambak`.
+- Conservación del perfil existente al actualizar; historia guiada, resumen del paciente, historial completo, correcciones auditadas, agenda, documentos, PIN/biometría y catálogo CIE-10 precargado.
 
-## Qué cambia
-- Historia clínica inicial guiada por secciones, preguntas y estructuras para completar. No genera diagnósticos, dosis ni hallazgos automáticamente.
-- Bloqueo de finalización si quedan marcadores `[Completar]` en campos activos.
-- Perfil de cada médico, cédula, establecimiento, domicilio, teléfono y logo propio; los datos del autor quedan guardados con cada nota.
-- Conserva borradores, notas anteriores, correcciones auditadas, respaldo cifrado y adaptación documental de la versión 2.2. Consulta ADAPTACION_NOM.md.
-- Primera configuración obligatoria del perfil. Cada instalación mantiene un expediente local independiente. No hay cuentas compartidas, sincronización entre médicos ni colaboración en tiempo real.
+Consulta [CAMBIOS_2_8.md](CAMBIOS_2_8.md), [REVISION_NORMATIVA.md](REVISION_NORMATIVA.md) y [PC_DRIVE.md](PC_DRIVE.md).
 
-## Subir a GitHub
-1. Crea un repositorio **privado** y descomprime este paquete.
-2. Sube el contenido de esta carpeta a la raíz del repositorio, incluyendo `.github`. No subas pacientes, respaldos ni claves de firma. No reemplaces un repositorio existente sin revisar sus diferencias.
-3. En GitHub abre **Actions → Generar APK Angel Medical → Run workflow**, selecciona **pruebas**.
-4. Cuando todas las verificaciones pasen, descarga el artifact de esa ejecución y extrae la APK. Si falla, comparte el registro de error, sin secretos.
+## Descargar y actualizar
 
-GitHub hace la compilación; no requiere Flutter en tu PC. Para subir cómodamente una carpeta completa puedes usar GitHub Desktop en una PC. Esta entrega es código y configuración, no una APK ya compilada.
+En **Actions → Generar APK Angel Medical**, abre una ejecución verde y descarga su artifact `Angel-Medical-comunidad-N`. Extrae el ZIP e instala la APK. Los artifacts se conservan 14 días.
 
-## Tres modos
-- **pruebas**: aplicación separada del Angel Medical actual, perfil vacío, firma temporal de CI. Usa exclusivamente pacientes ficticios. La firma puede cambiar entre ejecuciones y no garantiza actualizaciones conservando datos.
-- **comunidad**: aplicación separada para los otros médicos, perfil vacío, requiere firma estable. Cada médico configura sus datos. No es una base clínica compartida.
-- **personal**: mismo identificador Android de la aplicación de Ángel. Requiere exactamente la clave con que se firmó la APK instalada; una clave nueva no puede actualizarla. Haz respaldo verificable antes de probar una actualización y conserva la aplicación anterior.
+Antes de actualizar, crea un respaldo `.ambak`, conserva su contraseña y guarda una copia fuera del teléfono. Instala la misma edición sobre la aplicación existente, sin desinstalar. Cambiar identificador o clave de firma Android produce otra instalación o impide actualizar: no regenerar la firma estable. Esquema actual 6; esta versión usa metadatos y adjuntos existentes para mapa y firmas.
 
-## Firma estable
-Crea en Settings → Environments los entornos `comunidad` y `personal`. En cada uno guarda secretos `ANGEL_KEYSTORE_B64`, `ANGEL_STORE_PASSWORD`, `ANGEL_KEY_ALIAS`, `ANGEL_KEY_PASSWORD`. El primero contiene el archivo keystore codificado en base64. No publiques ni envíes estas claves por chat.
-Para comunidad se puede crear una clave propia una sola vez con Java/keytool; conserva una copia privada con sus contraseñas. Para personal usa la clave original, que pudo ser el debug.keystore del PC que compiló la versión instalada. No la regeneres.
-Las APK firmadas también se entregan como artifacts privados; el flujo no publica releases ni convierte el repositorio en público. La licencia para publicar código abierto está pendiente de definir.
+## Firmar una nota
 
-## Límites y revisión antes de uso clínico
-- Campos basados en NOM-004-SSA3-2012 y controles documentales; no equivalen por sí solos a cumplimiento integral. Revisión médica, jurídica y técnica pendiente, incluyendo aplicabilidad de NOM-024, firma electrónica, conservación y procedimientos del establecimiento.
-- Catálogo CIE-10 original no recibido: `assets/data/cie10_full.json` contiene una lista vacía. Falta incorporar un catálogo válido con el formato que lee la app antes de ofrecer esa búsqueda. No se inventaron códigos.
-- Logos originales no disponibles; se usa encabezado neutro o el logo cargado. El logo queda en la base cifrada y en instantáneas de autor por nota, lo que aumenta su tamaño.
-- Falta ejecutar análisis Flutter, pruebas de widgets y compilación real en Actions, y comprobar instalación, apertura del historial completo, PDF, respaldos y actualización en dispositivos. Primero prueben ustedes tres con datos ficticios.
-- No hay validación oficial, firma electrónica avanzada ni sugerencias diagnósticas por IA. El médico confirma y firma el contenido.
+Guardar RFC propio en Perfil. Abrir una nota guardada, seleccionar **Firmar esta versión**, elegir certificado `.cer`, clave RSA `.key` DER PKCS#8 cifrada y su contraseña local. La firma se realiza sobre esa versión y conserva autor y fecha de atención originales. Una corrección identifica la firma previa como versión anterior.
 
-## Pruebas locales de lógica
-`dart test/nom_cases.dart`, `dart test/guidance_cases.dart`, `dart checks/check_models.dart`, `python checks/check_migration.py`, `python checks/check_nom_migration.py`.
-Los scripts SQL comprueban preservación y rollback con SQLite de prueba; la migración SQLCipher del dispositivo también requiere prueba Android.
+Se verifica firma matemática, correspondencia clave/certificado y vigencia según reloj local. No se verifican cadena de confianza SAT, revocación ni sello de tiempo confiable. No se garantiza reconocimiento jurídico de un expediente concreto. Las pruebas automatizadas usan certificados ficticios; falta comprobación funcional con certificado SAT real, manejado exclusivamente por su titular. No subir claves privadas ni contraseñas al repositorio o al chat.
+
+## Compilación y pruebas
+
+GitHub Actions prepara Android con Flutter 3.47.2 y Java 17. Por defecto construye **comunidad** con la firma estable configurada en secretos. **pruebas** y **personal** son modos separados; consultar [EDICION_PARA_MEDICOS.md](EDICION_PARA_MEDICOS.md) antes de cambiar firma o identificador. Nunca publicar keystore ni secretos.
+
+El flujo exige análisis Dart, pruebas Flutter, preservación/migración SQL, catálogo y favoritos, pruebas nativas de firma, verificación CMS independiente con OpenSSL, compilación release y comprobación de proveedores criptográficos en el DEX final. El build requiere todos los pasos aprobados antes de entregar una nueva APK.
+
+La instalación/actualización y el uso con datos reales también requieren comprobación en el dispositivo. Mantener respaldos externos verificables y los procedimientos de confidencialidad/conservación del consultorio. La app ofrece apoyo documental; no sustituye la revisión clínica ni se presenta como sistema NOM-024 certificado.
