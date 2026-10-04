@@ -24,6 +24,8 @@ class MainActivity : FlutterFragmentActivity() {
                         (call.argument<String>("password") ?: "").toCharArray())
                     else LocalSigner.verify(data, call.argument<ByteArray>("cms") ?: throw IllegalArgumentException())
                     runOnUiThread { result.success(answer) }
+                } catch (e: LocalSigner.Failure) {
+                    runOnUiThread { result.error(e.code, "La operación no se completó. Código de diagnóstico: ${e.code}", null) }
                 } catch (_: Exception) {
                     // Do not expose provider exceptions, file data, passwords or private keys in logs.
                     runOnUiThread { result.error("SIGNATURE_FAILED", "No se pudo firmar o verificar. Revisa contraseña, correspondencia de archivos, vigencia y formato DER PKCS#8 cifrado.", null) }

@@ -10,6 +10,8 @@ import 'package:cross_file/cross_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'clinical_certificate.dart';
+import 'clinical_signature_flow.dart';
+import 'clinical_signature_password.dart';
 import 'clinical_nom.dart';
 import 'clinical_record.dart';
 import 'clinical_signature_data.dart';
@@ -43,11 +45,13 @@ class ClinicalSignatureService {
     final picked = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: [extension], withData: true);
     if (picked == null) return null;
     if (picked.files.single.size > 128 * 1024) throw const FormatException('Archivo demasiado grande (máximo 128 KB).');
-    return picked.files.single.bytes ?? await File(picked.files.single.path!).readAsBytes();
+    final bytes = picked.files.single.bytes ?? await File(picked.files.single.path!).readAsBytes();
+    return Uint8List.fromList(bytes);
   }
   static Future<Map<String, dynamic>?> sign(BuildContext context, {required String table, required Map<String, Object?> patient, required Map<String, Object?> record, required String title}) async {
     Uint8List? key;
-    final password = TextEditingController();
+    String? password;
+    var stage = 'Leer certificado';
     try {
       final certificate = await pick('cer'); if (certificate == null || !context.mounted) return null;
       final parsed = readCertificate(certificate);
@@ -63,23 +67,28 @@ class ClinicalSignatureService {
       final accepted = await clinicalConfirm(context, 'Firmar versión actual', 'Firmante: ${parsed.name}\nRFC: ${parsed.rfc}\n\nLa firma se realiza hoy sobre esta versión; no cambia la fecha ni el autor original de la atención. Se verificará integridad, correspondencia de la clave y fechas. La confianza de la cadena SAT, la revocación y el sello de tiempo confiable no se verifican. Seleccionarás la .key cifrada y su contraseña, que no se guardarán en el expediente.');
       if (!accepted || !context.mounted) return null;
       key = await pick('key'); if (key == null || !context.mounted) return null;
-      final approved = await showDialog<bool>(context: context, builder: (ctx) => AlertDialog(title: const Text('Contraseña de la clave privada'), content: TextField(controller: password, obscureText: true, autocorrect: false, enableSuggestions: false, decoration: const InputDecoration(labelText: 'Contraseña .key')), actions: [TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')), FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Firmar'))]));
-      if (approved != true || !context.mounted) return null;
+      password = await showDialog<String>(context: context, builder: (_) => const ClinicalSignaturePassword());
+      if (password == null || !context.mounted) return null;
+      stage = 'Generar PDF';
       final pdf = await PdfService.buildClinicalPdf(title: title, patient: patient, record: record, fields: clinicalFields(record), signatureCopy: true);
-      final result = Map<String, dynamic>.from((await signatureChannel.invokeMethod<Map>('sign', {'data': pdf, 'certificate': certificate, 'key': key, 'password': password.text}))!);
+      stage = 'Firmar PDF';
+      final result = await nativeSign(pdf, certificate, key, password!, stage);
       if (result['valid'] != true) throw const FormatException('La firma no pasó la verificación.');
       final cms = result['cms'] as Uint8List;
       final payload = <String, dynamic>{'format': 'angel-medical-signed-pdf-v1', 'table': table, 'record_id': record['id'], 'patient_id': patient['id'], 'record_sha256': clinicalRecordHash(record), 'pdf_sha256': sha256.convert(pdf).toString(), 'pdf': base64Encode(pdf), 'cms': base64Encode(cms), 'certificate': base64Encode(certificate), 'signed_at_device': DateTime.now().toUtc().toIso8601String(), 'signer_name': parsed.name, 'signer_rfc': parsed.rfc, 'certificate_serial': parsed.serial, 'trust_verified': false, 'revocation_verified': false, 'trusted_timestamp': false};
       final manifest = Uint8List.fromList(utf8.encode(jsonEncode(canonicalValue({
         for (final field in signatureBoundFields) field: payload[field],
       }))));
-      final manifestResult = Map<String, dynamic>.from((await signatureChannel.invokeMethod<Map>('sign', {'data': manifest, 'certificate': certificate, 'key': key, 'password': password.text}))!);
-      password.clear();
+      stage = 'Firmar manifiesto';
+      final manifestResult = await nativeSign(manifest, certificate, key, password!, stage);
+      password = null;
       payload['manifest'] = base64Encode(manifest);
       payload['manifest_cms'] = base64Encode(manifestResult['cms'] as Uint8List);
+      stage = 'Verificar PDF y manifiesto';
       await verify(payload);
       final bytes = Uint8List.fromList(utf8.encode(jsonEncode(payload)));
       if (bytes.length > 8 * 1024 * 1024) throw const FormatException('El paquete excede 8 MB. No se guardó la firma.');
+      stage = 'Guardar firma en el expediente';
       final db = await AppDb.instance.database;
       await db.transaction((tx) async {
         final fresh = await tx.query(table, where: 'id=?', whereArgs: [record['id']]);
@@ -92,14 +101,22 @@ class ClinicalSignatureService {
         await tx.insert('audit', {'date': payload['signed_at_device'], 'action': 'SIGN_CLINICAL_PDF', 'detail': '$table:${record['id']} · ${payload['pdf_sha256']} · sin validación de confianza SAT'});
       });
       return payload;
-    } finally {
-      password.clear();
-      if (key != null) key.fillRange(0, key.length, 0);
-      try { await FilePicker.platform.clearTemporaryFiles(); } catch (_) { /* Cleanup is best effort; no private key is stored in the database. */ }
-      // The app never persists the private key/password. Dart strings and the
-      // platform bridge cannot promise complete erasure of every memory copy.
-      await Future<void>.delayed(const Duration(milliseconds: 250)); password.dispose();
+    } on FormatException { rethrow; }
+    on ClinicalSignatureFailure { rethrow; }
+    catch (_) { throw ClinicalSignatureFailure(stage, 'OPERATION_FAILED'); }
+    finally {
+      password = null;
+      await signatureCleanup([
+        () { if (key != null) key!.fillRange(0, key!.length, 0); },
+        () async { await FilePicker.platform.clearTemporaryFiles(); },
+      ]);
     }
+  }
+  static Future<Map<String, dynamic>> nativeSign(Uint8List data, Uint8List certificate, Uint8List key, String password, String stage) async {
+    final operationKey = Uint8List.fromList(key);
+    try {
+      return await signatureStage(stage, () async => Map<String, dynamic>.from((await signatureChannel.invokeMethod<Map>('sign', {'data': data, 'certificate': certificate, 'key': operationKey, 'password': password}))!));
+    } finally { operationKey.fillRange(0, operationKey.length, 0); }
   }
   static Future<Map<String, dynamic>> verify(Map<String, dynamic> payload) async {
     final pdf = base64Decode('${payload['pdf']}'); final cms = base64Decode('${payload['cms']}');

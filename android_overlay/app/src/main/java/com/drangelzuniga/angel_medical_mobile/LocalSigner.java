@@ -18,6 +18,10 @@ import org.bouncycastle.operator.jcajce.*;
 
 /** Offline CMS signature: mathematical integrity only, no SAT trust assertion. */
 public final class LocalSigner {
+  public static final class Failure extends Exception {
+    public final String code;
+    Failure(String code) { super(code); this.code = code; }
+  }
   private static final BouncyCastleProvider PROVIDER = new BouncyCastleProvider();
   private static void bounded(byte[] data, int max) {
     if (data == null || data.length == 0 || data.length > max) throw new IllegalArgumentException("Tamaño de archivo no permitido");
@@ -26,21 +30,31 @@ public final class LocalSigner {
     try {
       bounded(data, 8*1024*1024); bounded(certificate, 128*1024); bounded(encryptedKey, 128*1024);
       if (password == null || password.length == 0 || password.length > 1024) throw new IllegalArgumentException("Contraseña requerida");
-      X509Certificate cert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(certificate));
-      cert.checkValidity();
+      X509Certificate cert;
+      try { cert = (X509Certificate) CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(certificate)); }
+      catch (Exception e) { throw new Failure("CERT_INVALID"); }
+      try { cert.checkValidity(); }
+      catch (java.security.cert.CertificateExpiredException e) { throw new Failure("CERT_EXPIRED"); }
+      catch (java.security.cert.CertificateNotYetValidException e) { throw new Failure("CERT_NOT_YET_VALID"); }
       boolean[] usage = cert.getKeyUsage();
       if (usage != null && !usage[0] && !(usage.length > 1 && usage[1])) throw new IllegalArgumentException("Certificado sin uso de firma");
       // Accept encrypted DER PKCS#8 only. Never fall back to an unencrypted key.
-      PKCS8EncryptedPrivateKeyInfo encoded = new PKCS8EncryptedPrivateKeyInfo(encryptedKey);
-      PrivateKey key = new JcaPEMKeyConverter().setProvider(PROVIDER).getPrivateKey(encoded.decryptPrivateKeyInfo(new JceOpenSSLPKCS8DecryptorProviderBuilder().setProvider(PROVIDER).build(password)));
+      PKCS8EncryptedPrivateKeyInfo encoded;
+      try { encoded = new PKCS8EncryptedPrivateKeyInfo(encryptedKey); }
+      catch (Exception e) { throw new Failure("KEY_READ_FAILED"); }
+      PrivateKey key;
+      try { key = new JcaPEMKeyConverter().setProvider(PROVIDER).getPrivateKey(encoded.decryptPrivateKeyInfo(new JceOpenSSLPKCS8DecryptorProviderBuilder().setProvider(PROVIDER).build(password))); }
+      catch (Exception e) { throw new Failure("KEY_DECRYPT_FAILED"); }
       if (!(key instanceof RSAPrivateKey) || ((RSAPrivateKey)key).getModulus().bitLength() < 2048) throw new IllegalArgumentException("Se requiere clave RSA de al menos 2048 bits");
       CMSSignedDataGenerator generator = new CMSSignedDataGenerator();
       generator.addSignerInfoGenerator(new JcaSignerInfoGeneratorBuilder(new JcaDigestCalculatorProviderBuilder().setProvider(PROVIDER).build()).build(new JcaContentSignerBuilder("SHA256withRSA").setProvider(PROVIDER).build(key), cert));
       generator.addCertificates(new JcaCertStore(Collections.singletonList(cert)));
       byte[] cms = generator.generate(new CMSProcessableByteArray(data), false).getEncoded();
       // A mismatched certificate/key must not be saved as a successful signature.
-      Map<String,Object> result = verify(data, cms);
-      if (!Boolean.TRUE.equals(result.get("valid"))) throw new IllegalArgumentException("La clave no corresponde al certificado");
+      Map<String,Object> result;
+      try { result = verify(data, cms); }
+      catch (Exception e) { throw new Failure("CERT_KEY_MISMATCH"); }
+      if (!Boolean.TRUE.equals(result.get("valid"))) throw new Failure("CERT_KEY_MISMATCH");
       result.put("cms", cms);
       return result;
     } finally {

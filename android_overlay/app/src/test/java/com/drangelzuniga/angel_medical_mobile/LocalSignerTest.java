@@ -41,7 +41,9 @@ public class LocalSignerTest {
       Fixture selected = i == 2 ? new Fixture(-1000L) : f;
       byte[] key = selected.key.clone(); char[] password = (i == 0 ? "wrong" : "fixture-only").toCharArray();
       try { LocalSigner.sign(new byte[]{1,2,3}, i == 1 ? other.cert : selected.cert, key, password); fail("Invalid signing inputs accepted"); }
-      catch (Exception expected) { }
+      catch (LocalSigner.Failure expected) {
+        assertEquals(i == 0 ? "KEY_DECRYPT_FAILED" : i == 1 ? "CERT_KEY_MISMATCH" : "CERT_EXPIRED", expected.code);
+      }
       for (byte b : key) assertEquals(0, b); for (char c : password) assertEquals(0, c);
     }
   }

@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'clinical_signature.dart';
+import 'clinical_signature_flow.dart';
 import 'clinical_signature_data.dart';
 import 'clinical_ui.dart';
 import 'db.dart';
@@ -15,7 +16,7 @@ class ClinicalSignaturePanel extends StatefulWidget {
   State<ClinicalSignaturePanel> createState() => _ClinicalSignaturePanelState();
 }
 class _ClinicalSignaturePanelState extends State<ClinicalSignaturePanel> {
-  bool busy = false;
+  bool busy = false, loading = true;
   List<Map<String, dynamic>> signatures = [];
   String? error;
   @override
@@ -33,8 +34,8 @@ class _ClinicalSignaturePanelState extends State<ClinicalSignaturePanel> {
         if (payload['table'] != widget.table || payload['record_id'] != widget.record['id'] || payload['patient_id'] != widget.patient['id']) throw const FormatException('Firma vinculada a otro registro.');
         next.add(payload);
       }
-      if (mounted) setState(() { signatures = next; error = null; });
-    } catch (_) { if (mounted) setState(() => error = 'No se pudo verificar alguna firma. No se muestra como válida.'); }
+      if (mounted) setState(() { signatures = next; error = null; loading = false; });
+    } catch (_) { if (mounted) setState(() { signatures = []; loading = false; error = 'No se pudo verificar alguna firma. No se muestra como válida.'; }); }
   }
   Future<void> sign() async {
     if (busy) return;
@@ -42,7 +43,11 @@ class _ClinicalSignaturePanelState extends State<ClinicalSignaturePanel> {
     try {
       await ClinicalSignatureService.sign(context, table: widget.table, patient: widget.patient, record: widget.record, title: widget.title);
       await load();
-    } catch (e) { if (mounted) clinicalMessage(context, e is FormatException ? e.message : 'No se pudo firmar. Comprueba los archivos, contraseña y vigencia.'); }
+      if (mounted && error == null && signatures.any((p) => p['record_sha256'] == clinicalRecordHash(widget.record))) clinicalMessage(context, 'Firma guardada y verificada. Puedes exportar el PDF con su firma.');
+    } catch (e) {
+      await load();
+      if (mounted) clinicalMessage(context, e is ClinicalSignatureFailure ? e.message : e is FormatException ? e.message : 'No se completó el proceso de firma. Código: PANEL_FAILURE. Las firmas anteriores se conservan.');
+    }
     finally { if (mounted) setState(() => busy = false); }
   }
   Future<void> inspect() async {
@@ -58,13 +63,18 @@ class _ClinicalSignaturePanelState extends State<ClinicalSignaturePanel> {
     catch (_) { if (mounted) clinicalMessage(context, 'No se pudo verificar o exportar la firma.'); }
     finally { if (mounted) setState(() => busy = false); }
   }
+  Map<String, dynamic>? get current {
+    for (final payload in signatures) { if (payload['record_sha256'] == clinicalRecordHash(widget.record)) return payload; }
+    return null;
+  }
   @override
   Widget build(BuildContext context) => clinicalPanel(context, 'Firma electrónica del PDF', [
     const Text('Firma local con .cer y .key cifrada. No se guardan la clave privada ni su contraseña en la base.'),
     const SizedBox(height: 8),
     const Text('Verificación de integridad disponible. Confianza SAT, revocación y sello de tiempo confiable pendientes.', style: TextStyle(fontSize: 12)),
     if (error != null) Text(error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
-    if (busy) const LinearProgressIndicator(),
+    if (busy || loading) const LinearProgressIndicator(),
+    if (current != null) const Text('Esta versión ya tiene una firma verificada. Puedes exportarla sin introducir otra vez la clave.'),
     for (final payload in signatures) ListTile(
       contentPadding: EdgeInsets.zero,
       leading: Icon(payload['record_sha256'] == clinicalRecordHash(widget.record) ? Icons.fact_check_outlined : Icons.history),
@@ -72,7 +82,8 @@ class _ClinicalSignaturePanelState extends State<ClinicalSignaturePanel> {
       subtitle: Text('${payload['signer_name']} · ${payload['signer_rfc']}\n${clinicalDate(payload['signed_at_device'])} · fecha del dispositivo'),
       trailing: IconButton(tooltip: 'Exportar PDF y firmas', onPressed: busy ? null : () => export(payload), icon: const Icon(Icons.ios_share)),
     ),
-    FilledButton.tonalIcon(onPressed: busy ? null : sign, icon: const Icon(Icons.draw_outlined), label: const Text('Firmar esta versión')),
+    FilledButton.tonalIcon(onPressed: busy || loading ? null : current == null ? sign : () => export(current!), icon: Icon(current == null ? Icons.draw_outlined : Icons.ios_share), label: Text(current == null ? 'Firmar esta versión' : 'Exportar versión firmada')),
+    if (current != null) ExpansionTile(title: const Text('Añadir otra firma a esta versión'), children: [TextButton(onPressed: busy || loading ? null : sign, child: const Text('Firmar nuevamente'))]),
     OutlinedButton.icon(onPressed: busy ? null : inspect, icon: const Icon(Icons.event_available_outlined), label: const Text('Revisar vigencia del .cer')),
   ]);
 }
