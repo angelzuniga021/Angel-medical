@@ -1,3 +1,5 @@
+import 'clinical_exchange_screen.dart';
+import 'clinical_regulatory_review.dart';
 import 'clinical_profile.dart';
 import 'clinical_nom.dart';
 import 'clinical_cie_screen.dart';
@@ -382,9 +384,13 @@ class _ClinicalToolsState extends State<ClinicalTools> {
     body: ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        clinicalPanel(context, 'PC y Drive · preparación', [
+          ListTile(title: const Text('Crear instantánea cifrada para PC'), subtitle: const Text('Formato preparado para un futuro lector. No es sincronización.'), leading: const Icon(Icons.computer_outlined), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ClinicalExchangeScreen()))),
+        ]),
         clinicalPanel(context, 'Documentación clínica NOM-004', [
+          ListTile(leading: const Icon(Icons.fact_check_outlined), title: const Text('Revisión documental y pendientes'), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ClinicalRegulatoryReview()))),
           const Text(
-            'Configura autor y establecimiento. Las notas muestran campos faltantes y se imprimen para firma autógrafa. La revisión asistida no es una certificación NOM-024.',
+            'Revisa datos pendientes, conservación y alcance de las funciones normativas. La revisión técnica no es una certificación NOM-024.',
           ),
           OutlinedButton.icon(
             onPressed: () => Navigator.push(
@@ -478,7 +484,7 @@ class _ClinicalToolsState extends State<ClinicalTools> {
             ),
         ]),
         const ListTile(
-          title: Text('Angel Medical 2.7.0'),
+          title: Text('Angel Medical 2.8.0'),
           subtitle: Text(
             'Uso local · Expediente cifrado · Sincronización entre dispositivos no incluida',
           ),

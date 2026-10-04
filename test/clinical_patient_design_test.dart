@@ -15,7 +15,7 @@ void main() {
       await tester.pump();
       await tester.scrollUntilVisible(find.text('Medicación habitual'), 200, scrollable: find.byType(Scrollable).first);
       expect(find.text('Medicación de prueba'), findsOneWidget);
-      await tester.scrollUntilVisible(find.text('Registro guardado · Sin firma electrónica'), 200, scrollable: find.byType(Scrollable).first);
+      await tester.scrollUntilVisible(find.text('Registro guardado · Consultar estado de firma'), 200, scrollable: find.byType(Scrollable).first);
       expect(tester.takeException(), isNull);
     });
   }

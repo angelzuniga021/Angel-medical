@@ -1,3 +1,4 @@
+import 'clinical_body_data.dart';
 import 'dart:convert';
 
 import 'package:sqflite_sqlcipher/sqflite.dart';
@@ -52,6 +53,7 @@ class ClinicalStore {
     String reason = '',
   }) async {
     if (!noteFields.containsKey(table)) throw StateError('Tipo no permitido');
+    parseBodyMap(input['nom_body_map'] ?? '');
     final values = parseClinicalInput(table, input);
     if (!noteFields[table]!.any(
       (key) =>
@@ -142,8 +144,7 @@ class ClinicalStore {
           (e) => original[e.key] != e.value,
         );
         final extrasChanged =
-            extras.length != oldFields.length ||
-            extras.entries.any((e) => oldFields[e.key] != e.value);
+            {...extras.keys, ...oldFields.keys}.any((key) => (extras[key] ?? '') != (oldFields[key] ?? ''));
         if (!baseChanged && !extrasChanged)
           throw const FormatException('No hay cambios clínicos para guardar');
         if (table == 'consultations' &&

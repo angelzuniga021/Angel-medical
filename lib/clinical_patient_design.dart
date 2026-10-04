@@ -75,7 +75,7 @@ class ClinicalTimelineTile extends StatelessWidget {
         Text(clinicalDate(event['date']), style: Theme.of(context).textTheme.labelMedium), const SizedBox(height: 5),
         Text('${event['type']}', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
         const SizedBox(height: 8), Text(recordedValue(event['text']), maxLines: 3, overflow: TextOverflow.ellipsis),
-        const SizedBox(height: 10), const Text('Registro guardado · Sin firma electrónica', style: TextStyle(fontSize: 11)),
+        const SizedBox(height: 10), const Text('Registro guardado · Consultar estado de firma', style: TextStyle(fontSize: 11)),
       ])), const Icon(Icons.chevron_right, size: 20),
     ])),
   ));

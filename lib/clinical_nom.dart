@@ -1,3 +1,4 @@
+import 'clinical_body_data.dart';
 import 'clinical_guidance.dart';
 import 'clinical_models.dart';
 
@@ -14,6 +15,7 @@ const nomTables = [
 
 // Assistance for NOM-004 documentation; this is not a certification engine.
 const nomLabels = <String, String>{
+  'nom_body_map': 'Mapa corporal del dolor',
   'nom_kind': 'Tipo de atención',
   'nom_family': 'Antecedentes heredofamiliares',
   'nom_ethnic': 'Grupo étnico, si aplica',
@@ -90,7 +92,11 @@ Map<String, String> nomInput(Map<String, Object?>? record) {
       : {};
 }
 
-List<String> nomKeys(String table, Map<String, String> input) {
+List<String> nomKeys(String table, Map<String, String> input) => [
+  ..._nomKeys(table, input),
+  if (['consultations', 'emergencies', 'hospitalizations', 'progress_notes'].contains(table)) 'nom_body_map',
+];
+List<String> _nomKeys(String table, Map<String, String> input) {
   if (table == 'consultations')
     return [
       if ((input['nom_kind'] ?? 'Historia clínica inicial') ==
@@ -435,7 +441,7 @@ List<MapEntry<String, String>> nomDisplay(Map<String, Object?> record) {
         out.add(
           MapEntry(
             nomLabels['${e.key}'] ?? nomBaseLabels['${e.key}'] ?? '${e.key}',
-            '${e.value}',
+            e.key == 'nom_body_map' ? describeBodyMap('${e.value}') : '${e.value}',
           ),
         );
     }

@@ -47,6 +47,18 @@ jobs:
           python checks/check_migration.py
           python checks/check_nom_migration.py
           python checks/check_catalog_bootstrap.py
+      - name: Verificar firma nativa e interoperabilidad CMS
+        env:
+          ANGEL_FIXTURE_DIR: ${{ github.workspace }}/native-fixture
+        run: |
+          cd android
+          ./gradlew :app:testDebugUnitTest
+          cd ..
+          openssl cms -verify -binary -inform DER -in native-fixture/document.p7s -content native-fixture/document.txt -noverify -out /dev/null
+          printf 'altered fixture' > native-fixture/altered.txt
+          if openssl cms -verify -binary -inform DER -in native-fixture/document.p7s -content native-fixture/altered.txt -noverify -out /dev/null 2>/dev/null; then
+            exit 1
+          fi
       - name: Compilar APK
         run: flutter build apk --release --dart-define=COMMUNITY_EDITION=$ANGEL_COMMUNITY --build-number=$((1000 + ${{ github.run_number }}))
       - name: Preparar descarga

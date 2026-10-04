@@ -1,3 +1,5 @@
+import 'clinical_signature_data.dart';
+import 'clinical_signature.dart';
 import 'clinical_nom.dart';
 
 import 'dart:convert';
@@ -166,6 +168,11 @@ class _PatientAttachmentsState extends State<PatientAttachments> {
       if (sha256.convert(data).toString() != records.single['sha256'])
         throw StateError('El archivo no pasó la verificación de integridad.');
       if (!mounted) return;
+      if (meta['mime'] == signedNoteMime) {
+        final payload = Map<String, dynamic>.from(jsonDecode(utf8.decode(data)) as Map);
+        await ClinicalSignatureService.export(payload);
+        return;
+      }
       await Navigator.push(
         context,
         MaterialPageRoute(
@@ -221,7 +228,7 @@ class _PatientAttachmentsState extends State<PatientAttachments> {
         Card(
           child: ListTile(
             leading: Icon(
-              r['mime'] == 'application/pdf'
+              r['mime'] == signedNoteMime ? Icons.draw_outlined : r['mime'] == 'application/pdf'
                   ? Icons.picture_as_pdf_outlined
                   : Icons.image_outlined,
             ),

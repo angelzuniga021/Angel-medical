@@ -1,12 +1,13 @@
 name: angel_medical_mobile
 description: Angel Medical Mobile - expediente clinico offline cifrado
 publish_to: "none"
-version: 2.7.0+70
+version: 2.8.0+80
 
 environment:
   sdk: ">=3.10.0 <4.0.0"
 
 dependencies:
+  archive: ^3.6.1
   timezone: ^0.10.1
   flutter_local_notifications: ^19.4.0
   flutter:

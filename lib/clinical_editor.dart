@@ -1,3 +1,5 @@
+import 'clinical_body_map.dart';
+import 'clinical_body_data.dart';
 import 'clinical_note_review.dart';
 import 'clinical_cie_screen.dart';
 import 'clinical_catalog.dart';
@@ -311,6 +313,7 @@ class _ClinicalEditorState extends State<ClinicalEditor>
         profile: profile,
         encounter: encounter,
       );
+      try { parseBodyMap(input['nom_body_map'] ?? ''); } catch (_) { issues.add('Revisa el mapa corporal del dolor.'); }
       setState(() => missing = issues);
       if (issues.isNotEmpty) {
         await showDialog<void>(
@@ -414,6 +417,7 @@ class _ClinicalEditorState extends State<ClinicalEditor>
               'type',
               'title',
               'nom_kind',
+              'nom_body_map',
               'nom_signer',
               'nom_relationship',
               'nom_witness1',
@@ -526,6 +530,7 @@ class _ClinicalEditorState extends State<ClinicalEditor>
                 'type',
                 'title',
                 'nom_kind',
+                'nom_body_map',
                 'nom_signer',
                 'nom_relationship',
                 'nom_witness1',
@@ -821,12 +826,17 @@ class _ClinicalEditorState extends State<ClinicalEditor>
                         ],
                       ),
                     const SizedBox(height: 16),
+                    if (visibleKeys.contains('nom_body_map') && (!guided || guideStep == 0))
+                      OutlinedButton.icon(onPressed: () async {
+                        final map = await Navigator.push<String>(context, MaterialPageRoute(builder: (_) => ClinicalBodyMap(initial: fields['nom_body_map']?.text ?? '')));
+                        if (map != null && mounted) fields['nom_body_map']!.text = map;
+                      }, icon: const Icon(Icons.accessibility_new), label: Text((fields['nom_body_map']?.text ?? '').isEmpty ? 'Marcar dolor en el cuerpo' : 'Revisar mapa del dolor registrado')),
                     for (final e in fields.entries.where(
                       (e) =>
                           visibleKeys.contains(e.key) &&
                           showField(e.key) &&
                           !numericFields.contains(e.key) &&
-                          !{'type', 'nom_kind'}.contains(e.key),
+                          !{'type', 'nom_kind', 'nom_body_map'}.contains(e.key),
                     ))
                       Padding(
                         padding: const EdgeInsets.only(bottom: 14),

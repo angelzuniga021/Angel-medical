@@ -1,4 +1,6 @@
+import 'dart:typed_data';
 import 'clinical_profile.dart';
+import 'clinical_exchange_data.dart';
 import 'clinical_catalog.dart';
 import 'clinical_guidance.dart';
 
@@ -59,6 +61,35 @@ class BackupService {
 
   static Future<SecretKey> _derive(String password, List<int> salt) =>
       _kdf.deriveKey(secretKey: SecretKey(utf8.encode(password)), nonce: salt);
+
+  /// Encrypted logical snapshot for a future desktop reader; not live sync.
+  static Future<File> createExchange(String password) async {
+    if (password.trim().length < 8) throw const FormatException('Usa al menos 8 caracteres para el archivo de intercambio.');
+    final db = await AppDb.instance.database;
+    var databaseId = await AppDb.instance.getSetting('database_uuid');
+    if (databaseId == null) {
+      final random = Random.secure();
+      databaseId = List.generate(16, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join();
+      await AppDb.instance.setSetting('database_uuid', databaseId);
+    }
+    final snapshot = await db.transaction((tx) async {
+      if ((await tx.rawQuery('PRAGMA integrity_check')).single.values.first != 'ok' || (await tx.rawQuery('PRAGMA foreign_key_check')).isNotEmpty) throw const FormatException('La base requiere revisión antes de exportar.');
+      final tables = await tx.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name!='android_metadata' ORDER BY name");
+      final data = <String, dynamic>{};
+      for (final table in tables) {
+        final name = '${table['name']}';
+        if (!RegExp(r'^[a-z_]+$').hasMatch(name)) throw const FormatException('Tabla no reconocida.');
+        data[name] = (await tx.query(name)).map(exchangeRow).toList();
+      }
+      return {'format': 'angel-medical-logical-snapshot', 'version': 1, 'app_version': '2.8.0', 'database_uuid': databaseId, 'schema_version': (await tx.rawQuery('PRAGMA user_version')).single['user_version'], 'created_at': DateTime.now().toUtc().toIso8601String(), 'blob_encoding': r'base64/$binary', 'tables': data};
+    });
+    final salt = List<int>.generate(16, (_) => Random.secure().nextInt(256));
+    final encrypted = await _cipher.encrypt(utf8.encode(jsonEncode(snapshot)), secretKey: await _derive(password, salt));
+    final file = File(join((await getApplicationDocumentsDirectory()).path, 'Angel_PC_${DateTime.now().microsecondsSinceEpoch}.amx'));
+    await file.writeAsString(jsonEncode({'format': 'angel-medical-encrypted-exchange', 'v': 1, 'salt': base64Encode(salt), 'nonce': base64Encode(encrypted.nonce), 'mac': base64Encode(encrypted.mac.bytes), 'data': base64Encode(encrypted.cipherText)}), flush: true);
+    await AppDb.instance.audit('EXPORT_ENCRYPTED_EXCHANGE', 'Instantánea lógica cifrada para PC; sin sincronización');
+    return file;
+  }
 
   static Future<File> createPortable(String password) async {
     if (password.trim().length < 6) {
@@ -625,11 +656,17 @@ class PdfService {
     );
   }
 
-  static Future<void> printClinical({
+  static Future<void> printClinical({required String title, required Map<String, Object?> patient, required List<MapEntry<String, String>> fields, Map<String, Object?>? record}) async {
+    final bytes = await buildClinicalPdf(title: title, patient: patient, fields: fields, record: record);
+    await Printing.layoutPdf(onLayout: (_) async => bytes);
+  }
+
+  static Future<Uint8List> buildClinicalPdf({
     required String title,
     required Map<String, Object?> patient,
     required List<MapEntry<String, String>> fields,
     Map<String, Object?>? record,
+    bool signatureCopy = false,
   }) async {
     final doc = pw.Document();
     final nom = decodeNom(record?['nom_json']);
@@ -663,7 +700,7 @@ class PdfService {
           style: const pw.TextStyle(fontSize: 8),
         ),
         footer: (c) => pw.Text(
-          'Impresión sin firma electrónica · ${c.pageNumber}/${c.pagesCount}',
+          '${signatureCopy ? 'Firma separada: conservar este PDF con su archivo .p7s' : 'Impresión sin firma electrónica'} · ${c.pageNumber}/${c.pagesCount}',
           style: const pw.TextStyle(fontSize: 8),
         ),
         build: (_) => [
@@ -677,7 +714,7 @@ class PdfService {
           pw.Text(
             'Paciente: ${nom['patient'] is Map ? (nom['patient'] as Map)['name'] : '${patient['first_name']} ${patient['last_name']}'}',
           ),
-          for (final e in fields) ...[
+          for (final e in fields.where((e) => !signatureCopy || e.key != 'Firma del documento')) ...[
             pw.SizedBox(height: 10),
             pw.Text(e.key, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
             for (var i = 0; i < e.value.length; i += 1200)
@@ -712,7 +749,7 @@ class PdfService {
         ],
       ),
     );
-    await Printing.layoutPdf(onLayout: (_) => doc.save());
+    return doc.save();
   }
 
   static int? ageFromDob(String dob) {

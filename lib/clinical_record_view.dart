@@ -1,3 +1,6 @@
+import 'clinical_body_map.dart';
+import 'clinical_signature_panel.dart';
+import 'clinical_signature_data.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -137,6 +140,10 @@ class _ClinicalRecordViewState extends State<ClinicalRecordView> {
             '${widget.patient['first_name']} ${widget.patient['last_name']}',
             style: Theme.of(context).textTheme.titleLarge,
           ),
+          if ((nomInput(record)['nom_body_map'] ?? '').isNotEmpty)
+            OutlinedButton.icon(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ClinicalBodyMap(initial: nomInput(record)['nom_body_map']!, readOnly: true))), icon: const Icon(Icons.accessibility_new), label: const Text('Ver mapa corporal registrado')),
+          if (widget.table != null)
+            ClinicalSignaturePanel(key: ValueKey(clinicalRecordHash(record)), table: widget.table!, title: widget.title, patient: widget.patient, record: record),
           if (printing) const LinearProgressIndicator(),
           if (revisions.isNotEmpty)
             clinicalPanel(context, 'Historial de correcciones', [
@@ -168,7 +175,7 @@ class _ClinicalRecordViewState extends State<ClinicalRecordView> {
                 ),
             ]),
           for (final f in clinicalFields(record))
-            clinicalPanel(context, f.key, [Text(f.value)]),
+            clinicalPanel(context, f.key, [Text(f.key == 'Firma del documento' && widget.table != null ? 'Para la firma electrónica del PDF, consulta el panel de verificación de esta nota. El estado autográfico del registro original se conserva.' : f.value)]),
         ],
       ),
     ),
