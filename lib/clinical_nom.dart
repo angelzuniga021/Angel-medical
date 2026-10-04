@@ -437,7 +437,7 @@ List<MapEntry<String, String>> nomDisplay(Map<String, Object?> record) {
   final f = data['fields'];
   if (f is Map)
     for (final e in f.entries) {
-      if ('${e.value ?? ''}'.trim().isNotEmpty)
+      if (e.key != 'nom_rx_data' && '${e.value ?? ''}'.trim().isNotEmpty)
         out.add(
           MapEntry(
             nomLabels['${e.key}'] ?? nomBaseLabels['${e.key}'] ?? '${e.key}',
