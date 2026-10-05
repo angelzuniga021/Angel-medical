@@ -59,10 +59,12 @@ jobs:
         shell: pwsh
         run: |
           $native = (Resolve-Path 'native').Path
+          Copy-Item platform/openssl.cnf native/openssl.cnf
           $env:PATH = "$native;$env:PATH"
           $env:ANGEL_SQLCIPHER_DLL = Join-Path $native 'sqlcipher.dll'
           $env:ANGEL_OPENSSL_EXE = Join-Path $native 'openssl.exe'
           $env:OPENSSL_MODULES = $native
+          $env:OPENSSL_CONF = Join-Path $native 'openssl.cnf'
           $env:ANGEL_TEST_DATA_DIR = Join-Path $env:RUNNER_TEMP 'angel-pc-test'
           flutter analyze --no-fatal-infos --no-fatal-warnings
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -72,11 +74,12 @@ jobs:
         working-directory: desktop
         shell: pwsh
         run: |
-          flutter build windows --release
+          flutter build windows --release --dart-define=COMMUNITY_EDITION=true
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $dest = 'build/windows/x64/runner/Release'
           Copy-Item native/*.dll $dest
           Copy-Item native/openssl.exe $dest
+          Copy-Item native/openssl.cnf $dest
           Copy-Item native/*LICENSE* $dest
           Copy-Item LEEME.txt $dest
           $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'

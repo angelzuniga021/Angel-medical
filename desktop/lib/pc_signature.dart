@@ -10,7 +10,7 @@ class PcSignatureChannel {
   const PcSignatureChannel();
   String get executable => Platform.environment['ANGEL_OPENSSL_EXE'] ?? p.join(p.dirname(Platform.resolvedExecutable), 'openssl.exe');
   Future<int> run(List<String> args, {String? password}) async {
-    final process = await Process.start(executable, args, environment: {'OPENSSL_MODULES': p.dirname(executable)}, includeParentEnvironment: true);
+    final process = await Process.start(executable, args, environment: {'OPENSSL_MODULES': p.dirname(executable), 'OPENSSL_CONF': p.join(p.dirname(executable), 'openssl.cnf')}, includeParentEnvironment: true);
     final output = process.stdout.drain<void>(), errors = process.stderr.drain<void>();
     if (password != null) process.stdin.writeln(password);
     await process.stdin.close();
@@ -27,7 +27,7 @@ class PcSignatureChannel {
       await data.writeAsBytes(args['data'] as List<int>, flush: true);
       if (method == 'sign') {
         final password = args['password'] as String;
-        if (password.contains('\n') || password.contains('\r')) throw PlatformException(code: 'PASSWORD_FORMAT');
+        if (password.contains('\n') || password.contains('\r')) throw PlatformException(code: 'KEY_DECRYPT_FAILED');
         String pem(String type, List<int> bytes) {
           final encoded = base64Encode(bytes);
           return '-----BEGIN $type-----\n${RegExp('.{1,64}').allMatches(encoded).map((m) => m.group(0)).join('\n')}\n-----END $type-----\n';
@@ -36,16 +36,16 @@ class PcSignatureChannel {
         await key.writeAsString(pem('ENCRYPTED PRIVATE KEY', args['key'] as List<int>));
         await cert.writeAsString(pem('CERTIFICATE', args['certificate'] as List<int>));
         final code = await run(['cms', '-sign', '-binary', '-md', 'sha256', '-in', data.path, '-signer', cert.path, '-inkey', key.path, '-passin', 'stdin', '-outform', 'DER', '-out', cms.path, '-provider', 'default', '-provider', 'legacy'], password: password);
-        if (code != 0) throw PlatformException(code: 'KEY_PASSWORD_OR_CERTIFICATE');
+        if (code != 0) throw PlatformException(code: 'KEY_DECRYPT_FAILED');
       } else if (method == 'verify') {
         await cms.writeAsBytes(args['cms'] as List<int>);
       } else { throw PlatformException(code: 'UNSUPPORTED_OPERATION'); }
       final signers = File(p.join(dir.path, 'signers.pem'));
       final code = await run(['cms', '-verify', '-binary', '-inform', 'DER', '-in', cms.path, '-content', data.path, '-noverify', '-out', p.join(dir.path, 'verified.bin'), '-signer', signers.path]);
-      if (code != 0) throw PlatformException(code: 'CMS_INVALID');
+      if (code != 0) throw PlatformException(code: 'SIGNATURE_FAILED');
       final content = await signers.readAsString();
       final certificates = RegExp(r'-----BEGIN CERTIFICATE-----([\s\S]*?)-----END CERTIFICATE-----').allMatches(content).toList();
-      if (certificates.length != 1) throw PlatformException(code: 'AMBIGUOUS_SIGNER');
+      if (certificates.length != 1) throw PlatformException(code: 'CERT_INVALID');
       final result = <String, dynamic>{'valid': true, 'certificate': base64Decode(certificates.single[1]!.replaceAll(RegExp(r'\s'), '')), 'cms': Uint8List.fromList(await cms.readAsBytes())};
       return result as T;
     } finally { if (await dir.exists()) await dir.delete(recursive: true); }
