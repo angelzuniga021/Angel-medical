@@ -96,7 +96,7 @@ jobs:
           if (-not (Test-Path $iscc)) { choco install innosetup --yes --no-progress }
           & $iscc desktop/installer/angel.iss
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          $setup = (Resolve-Path 'entrega-pc/Angel-Medical-PC-1.0-Instalador.exe').Path
+          $setup = (Resolve-Path 'entrega-pc/Angel-Medical-PC-1.0.1-Instalador.exe').Path
           $installDir = Join-Path $env:RUNNER_TEMP 'angel-installed'
           $process = Start-Process $setup -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /DIR=`"$installDir`"" -PassThru -Wait
           if ($process.ExitCode -ne 0) { throw 'Falló el instalador.' }
@@ -128,7 +128,7 @@ jobs:
           Copy-Item desktop/LEEME.txt entrega-pc
       - uses: actions/upload-artifact@v7
         with:
-          name: Angel-Medical-PC-1.0-Instalador-${{ github.run_number }}
+          name: Angel-Medical-PC-1.0.1-Instalador-${{ github.run_number }}
           path: entrega-pc/
           retention-days: 30
       - uses: actions/upload-artifact@v7

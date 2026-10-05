@@ -1,5 +1,7 @@
 import 'clinical_prescription_pdf.dart';
 import 'pc_files.dart';
+import 'package:flutter/foundation.dart';
+import 'clinical_medication_import.dart';
 import 'clinical_pdf_signature.dart';
 import 'dart:typed_data';
 import 'clinical_profile.dart';
@@ -29,6 +31,8 @@ import 'pc_database.dart'
 
 import 'db.dart';
 import 'clinical_nom.dart';
+
+final backupRevision = ValueNotifier<int>(0);
 
 class SecurityService {
   static const _storage = FlutterSecureStorage();
@@ -84,7 +88,7 @@ class BackupService {
         if (!isExchangeTableName(name)) throw const FormatException('Tabla no reconocida.');
         data[name] = (await tx.query(name)).map(exchangeRow).toList();
       }
-      return {'format': 'angel-medical-logical-snapshot', 'version': 1, 'app_version': '3.2.2', 'database_uuid': databaseId, 'schema_version': (await tx.rawQuery('PRAGMA user_version')).single['user_version'], 'created_at': DateTime.now().toUtc().toIso8601String(), 'blob_encoding': r'base64/$binary', 'tables': data};
+      return {'format': 'angel-medical-logical-snapshot', 'version': 1, 'app_version': '3.2.3', 'database_uuid': databaseId, 'schema_version': (await tx.rawQuery('PRAGMA user_version')).single['user_version'], 'created_at': DateTime.now().toUtc().toIso8601String(), 'blob_encoding': r'base64/$binary', 'tables': data};
     });
     final salt = List<int>.generate(16, (_) => Random.secure().nextInt(256));
     final encrypted = await _cipher.encrypt(utf8.encode(jsonEncode(snapshot)), secretKey: await _derive(password, salt));
@@ -152,6 +156,7 @@ class BackupService {
       await AppDb.instance.setSetting('last_backup_at', createdAt);
       await AppDb.instance.setSetting('last_backup_file', file.path);
       await AppDb.instance.audit('CREATE_BACKUP', file.path);
+      backupRevision.value++;
       return file;
     } catch (_) {
       try {
@@ -167,9 +172,10 @@ class BackupService {
     final saved = await savePcFile(file, title: 'Guardar respaldo .ambak · puedes elegir tu carpeta Drive');
     if (saved == null) throw const FormatException('Guardado cancelado. La base local sigue intacta.');
     await AppDb.instance.setSetting('last_backup_file', saved.path);
-
-    await AppDb.instance.audit('SHARE_BACKUP_CLOUD', file.path);
-    return file;
+    await AppDb.instance.setSetting('last_backup_saved_at', DateTime.now().toIso8601String());
+    backupRevision.value++;
+    await AppDb.instance.audit('SAVE_BACKUP_FILE', saved.path);
+    return saved;
   }
 
   static Future<Map<String, dynamic>> _decodeBackup(
@@ -411,7 +417,7 @@ class MedicationImporter {
     return null;
   }
 
-  static Future<int> importXlsx() async {
+  static Future<int> importXlsx({Future<bool> Function(List<Map<String, Object?>> rows, int duplicates)? confirm}) async {
     final p = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['xlsx'],
@@ -490,8 +496,7 @@ class MedicationImporter {
         : (row[i]?.value?.toString().trim() ?? '');
 
     final db = await AppDb.instance.database;
-    var n = 0;
-    final batch = db.batch();
+    final rows = <Map<String, Object?>>[];
 
     for (final row in sheet.rows.skip(1)) {
       final g = cell(row, generic);
@@ -503,7 +508,7 @@ class MedicationImporter {
       final reg = cell(row, registration);
       final st = cell(row, status);
 
-      batch.insert('medications', {
+      rows.add({
         'generic_name': g.isEmpty ? b : g,
         'brand_name': b,
         'form': f,
@@ -511,16 +516,24 @@ class MedicationImporter {
         'presentation': pr,
         'registration': reg,
         'status': st,
-        'source': 'COFEPRIS/importado',
+        'source': 'Catálogo importado',
         'favorite': 0,
         'use_count': 0,
         'last_used_at': null,
         'search_text': _norm('$g $b $f $s $pr $reg'),
       });
-      n++;
+
     }
 
-    await batch.commit(noResult: true);
+    final pending = newMedicationRows(rows, await db.query('medications'));
+    if (confirm != null && !await confirm(pending, rows.length - pending.length)) return 0;
+    final n = await db.transaction((tx) async {
+      final current = newMedicationRows(pending, await tx.query('medications'));
+      final batch = tx.batch();
+      for (final row in current) { batch.insert('medications', row); }
+      await batch.commit(noResult: true);
+      return current.length;
+    });
     await AppDb.instance.audit('IMPORT_MEDICATIONS', '$n medicamentos');
     return n;
   }

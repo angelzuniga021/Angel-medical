@@ -1,7 +1,7 @@
-ANGEL MEDICAL PC 1.0 - APLICACION INDEPENDIENTE
+ANGEL MEDICAL PC 1.0.1 - APLICACION INDEPENDIENTE
 
 INSTALACION
-Extrae el ZIP y ejecuta Angel-Medical-PC-1.0-Instalador.exe.
+Extrae el ZIP y ejecuta Angel-Medical-PC-1.0.1-Instalador.exe.
 El instalador incluye Flutter, SQLCipher, OpenSSL, librerias de impresion
  y runtime C++. No necesitas Python, Java, Flutter ni Visual Studio en tu PC.
 Compatible con Windows 10/11 x64.
@@ -40,3 +40,5 @@ Los componentes necesarios estan incluidos. Selecciona tu .cer, la .key
 cifrada correspondiente y su contraseña cuando firmes. No se guardan en la base
 la clave privada ni la contraseña. No se valida confianza SAT, revocacion
 ni sello de tiempo confiable. La revision documental no es certificacion NOM.
+
+Actualización 1.0.1: extensión automática, carpeta recordada, guía en Ajustes, acceso a expedientes importados sin perfil y vista previa de medicamentos sin duplicados.

@@ -1,7 +1,7 @@
 [Setup]
 AppId={{E376AD8E-619F-4BFA-9F41-8B7E1EFDAB87}
 AppName=Angel Medical PC
-AppVersion=1.0.0
+AppVersion=1.0.1
 DefaultDirName={localappdata}\Programs\AngelMedical
 DefaultGroupName=Angel Medical
 PrivilegesRequired=lowest
@@ -9,7 +9,7 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0.17763
 OutputDir=..\..\entrega-pc
-OutputBaseFilename=Angel-Medical-PC-1.0-Instalador
+OutputBaseFilename=Angel-Medical-PC-1.0.1-Instalador
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern

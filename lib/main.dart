@@ -120,6 +120,7 @@ class DoctorSetupGate extends StatefulWidget {
 
 class _DoctorSetupGateState extends State<DoctorSetupGate> {
   bool? configured;
+
   String? error;
   @override
   void initState() {
@@ -138,7 +139,7 @@ class _DoctorSetupGateState extends State<DoctorSetupGate> {
           profile = decodeNom(previous);
         }
       }
-      final ready = hasExistingClinicalProfile(profile);
+      final ready = canOpenClinicalWorkspace(profile, await AppDb.instance.count('patients')); 
       if (mounted)
         setState(() {
           configured = ready;
@@ -180,7 +181,7 @@ class _DoctorSetupGateState extends State<DoctorSetupGate> {
               else
                 FilledButton(
                   onPressed: setup,
-                  child: const Text('Configurar mi consulta'),
+                  child: const Text('Completar perfil del médico'),
                 ),
             ],
           ),
@@ -1951,14 +1952,18 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: AppBar(title: const Text('Ajustes')),
+      appBar: AppBar(title: const Text('Ajustes'), actions: [IconButton(tooltip: 'Guía rápida', icon: const Icon(Icons.help_outline), onPressed: () => showDialog<void>(context: context, builder: (dialog) => AlertDialog(
+        title: const Text('Guía rápida de Ángel Medical'),
+        content: const SizedBox(width: 560, child: SingleChildScrollView(child: Text('1. Expedientes\nPulsa Guardar al terminar una captura. Los registros quedan en la base local de este dispositivo.\n\n2. Perfil y logos\nCompleta el perfil del médico para tus notas y recetas. Editar el perfil conserva los pacientes.\n\n3. Respaldos\nGuarda un .ambak, conserva su contraseña y verifica el archivo. En PC puedes elegir la carpeta de Drive. Comprueba en Drive que terminó de subir.\n\n4. Cambiar de equipo\nCrea el respaldo en el equipo con la información más reciente y restáuralo en el otro. Restaurar sustituye la base; no combina cambios. Guarda ambos respaldos si trabajaste en los dos equipos.\n\n5. Recetas\nAbre una receta guardada para imprimirla o firmar esa versión. Exporta la versión firmada para conservar su firma.\n\n6. Medicamentos\nImporta un Excel .xlsx con encabezados en la primera fila: Principio activo o Nombre comercial; opcionalmente Forma farmacéutica, Concentración, Presentación y Registro sanitario. Revisa la vista previa antes de confirmar.'))),
+        actions: [TextButton(onPressed: () => Navigator.pop(dialog), child: const Text('Cerrar'))],
+      ))) ]),
       body: ListView(
         padding: const EdgeInsets.all(14),
         children: [
           Card(
             child: Column(
               children: [
-                FutureBuilder<String?>(
+                ValueListenableBuilder<int>(valueListenable: backupRevision, builder: (_, revision, __) => FutureBuilder<String?>(
                   future: AppDb.instance.getSetting('last_backup_at'),
                   builder: (_, snap) => ListTile(
                     leading: const Icon(Icons.cloud_done_outlined, color: cyan),
@@ -1969,7 +1974,7 @@ class SettingsScreen extends StatelessWidget {
                           : fmtDate(snap.data),
                     ),
                   ),
-                ),
+                )),
                 const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.add_to_drive_outlined, color: cyan),
@@ -2008,11 +2013,19 @@ class SettingsScreen extends StatelessWidget {
                   leading: const Icon(Icons.medication_outlined),
                   title: const Text('Importar catálogo de medicamentos'),
                   subtitle: const Text(
-                    'XLSX de COFEPRIS u otro catálogo compatible',
+                    'Excel .xlsx · vista previa y control de duplicados',
                   ),
                   onTap: () async {
                     try {
-                      final n = await MedicationImporter.importXlsx();
+                      final n = await MedicationImporter.importXlsx(confirm: (rows, duplicates) async {
+                        if (!context.mounted) return false;
+                        return await showDialog<bool>(context: context, builder: (dialog) => AlertDialog(
+                          title: const Text('Revisar catálogo antes de importar'),
+                          content: SizedBox(width: 540, child: SingleChildScrollView(child: Text(
+                            '${rows.length} medicamentos nuevos.\n$duplicates filas repetidas se omitirán.\n\nVista previa (hasta 5):\n${rows.take(5).map((row) => "${row['generic_name']} · ${row['brand_name']} · ${row['strength']} · ${row['presentation']}").join("\n")}\n\nEl archivo es un catálogo de nombres y presentaciones; no incorpora dosis ni indicaciones clínicas.'))),
+                          actions: [TextButton(onPressed: () => Navigator.pop(dialog, false), child: const Text('Cancelar')), FilledButton(onPressed: rows.isEmpty ? null : () => Navigator.pop(dialog, true), child: const Text('Importar'))],
+                        )) ?? false;
+                      });
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('$n medicamentos importados')),
@@ -2034,7 +2047,7 @@ class SettingsScreen extends StatelessWidget {
             child: Padding(
               padding: EdgeInsets.all(14),
               child: Text(
-                'El respaldo en Drive sirve para recuperar la misma base en otro teléfono o tablet. No es sincronización en tiempo real: evita editar simultáneamente la misma base en dos dispositivos.',
+                'El respaldo permite trasladar la base entre PC y teléfono. Restaurar sustituye la base actual; no combina cambios de dos equipos.',
               ),
             ),
           ),

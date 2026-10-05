@@ -13,3 +13,7 @@ List<String> profileMissingFields(Map<String, dynamic> profile) =>
 /// Never overwrite a profile supplied by the restored database.
 String? localProfileToPreserve(String? local, String? restored) =>
     !hasExistingClinicalProfile(decodeNom(restored)) && hasExistingClinicalProfile(decodeNom(local)) ? local : null;
+
+/// Existing records remain accessible while the doctor completes the profile.
+bool canOpenClinicalWorkspace(Map<String, dynamic> profile, int patientCount) =>
+    hasExistingClinicalProfile(profile) || patientCount > 0;
