@@ -172,13 +172,13 @@ class _DesktopHomeState extends State<DesktopHome> {
     ]),
     body: Column(children: [
       if (busy) const LinearProgressIndicator(),
-      Expanded(child: snapshot == null ? Center(child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 600), child: Padding(padding: const EdgeInsets.all(24), child: Column(mainAxisSize: MainAxisSize.min, children: [
+      Expanded(child: snapshot == null ? Center(child: SingleChildScrollView(child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 600), child: Padding(padding: const EdgeInsets.all(24), child: Column(mainAxisSize: MainAxisSize.min, children: [
         const Icon(Icons.medical_information_outlined, size: 70), const SizedBox(height: 20),
         const Text('Tus expedientes, también en PC', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)), const SizedBox(height: 16),
         const Text('En Android abre Preparar intercambio con PC, crea un archivo .amx y guárdalo en Drive. Después ábrelo aquí con la misma contraseña.', textAlign: TextAlign.center), const SizedBox(height: 16),
         const Text('El archivo se consulta en memoria. No se guarda una copia descifrada, no modifica Android ni sincroniza cambios. Los archivos que guardes manualmente salen sin el cifrado de .amx.', textAlign: TextAlign.center), const SizedBox(height: 24),
         FilledButton.icon(onPressed: busy ? null : open, icon: const Icon(Icons.folder_open), label: const Text('Abrir expediente cifrado')),
-      ])))) : LayoutBuilder(builder: (ctx, constraints) {
+      ]))))) : LayoutBuilder(builder: (ctx, constraints) {
         if (constraints.maxWidth < 760) return patient == null ? patientList() : Column(children: [TextButton.icon(onPressed: () => setState(() => patient = null), icon: const Icon(Icons.arrow_back), label: const Text('Volver a pacientes')), Expanded(child: details())]);
         return Row(children: [SizedBox(width: 310, child: patientList()), const VerticalDivider(width: 1), Expanded(child: details())]);
       })),
