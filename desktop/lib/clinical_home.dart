@@ -388,7 +388,7 @@ class _ClinicalToolsState extends State<ClinicalTools> {
         clinicalPanel(context, 'Escalas y calculadoras clínicas', [
           ListTile(leading: const Icon(Icons.calculate_outlined), title: const Text('Abrir catálogo de escalas'), subtitle: const Text('Busca por área y guarda favoritos. Desde un paciente puedes guardar evaluaciones.'), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ClinicalScalesScreen()))),
         ]),
-        clinicalPanel(context, 'PC y Drive · preparación', [
+        clinicalPanel(context, 'Intercambio avanzado · .amx', [
           ListTile(title: const Text('Crear instantánea cifrada para PC'), subtitle: const Text('Formato preparado para un futuro lector. No es sincronización.'), leading: const Icon(Icons.computer_outlined), trailing: const Icon(Icons.chevron_right), onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ClinicalExchangeScreen()))),
         ]),
         clinicalPanel(context, 'Documentación clínica NOM-004', [
@@ -488,7 +488,7 @@ class _ClinicalToolsState extends State<ClinicalTools> {
             ),
         ]),
         const ListTile(
-          title: Text('Angel Medical 3.2.2'),
+          title: Text('Angel Medical PC 1.0'),
           subtitle: Text(
             'Uso local · Expediente cifrado · Sincronización entre dispositivos no incluida',
           ),

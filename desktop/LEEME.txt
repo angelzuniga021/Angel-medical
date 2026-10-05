@@ -1,28 +1,42 @@
-ANGEL MEDICAL PC 0.1.1 - PRIMERA EDICION DE CONSULTA
+ANGEL MEDICAL PC 1.0 - APLICACION INDEPENDIENTE
 
-1. Extrae TODO el ZIP en una carpeta de tu PC. No muevas el EXE solo:
-   necesita sus DLL y la carpeta data.
-2. Abre angel_medical_pc.exe.
-3. En la APK 3.2.1 abre Preparar intercambio con PC, elige una contraseña,
-   genera el archivo .amx y compártelo a tu carpeta Drive.
-4. Descarga ese archivo en la PC. En el programa pulsa Abrir .amx.
-   Introduce la contraseña que elegiste al exportar (no la contraseña de e.firma).
-5. Busca un paciente y selecciona la sección clínica.
-6. En Adjuntos y firmas puedes guardar el adjunto completo y, para paquetes
-   compatibles, extraer el PDF firmado original sin regenerarlo.
+INSTALACION
+Extrae el ZIP y ejecuta Angel-Medical-PC-1.0-Instalador.exe.
+El instalador incluye Flutter, SQLCipher, OpenSSL, librerias de impresion
+ y runtime C++. No necesitas Python, Java, Flutter ni Visual Studio en tu PC.
+Compatible con Windows 10/11 x64.
 
-Esta edición consulta la instantánea: NO permite editar ni sincroniza.
-Para ver cambios recientes, exporta otro .amx en Android y ábrelo en PC.
-.ambak continúa siendo el respaldo de recuperación de la APK.
-No es necesario desinstalar ni actualizar la APK 3.2.1 para usar este lector.
+PRIMER INICIO
+1. Crea un PIN para esta PC.
+2. Elige Comenzar desde cero y configura tu nombre, cedula, consultorio y logos.
+   O pulsa Importar respaldo .ambak del telefono y usa la contraseña elegida
+   al crear ese respaldo. No necesitas un respaldo para comenzar desde cero.
+3. Los pacientes y cambios se guardan en la base local cifrada de esta PC.
+   Cerrar y volver a abrir la aplicacion conserva tus registros y tu perfil.
 
-Los datos descifrados se conservan solamente en memoria mientras el expediente
-está abierto. Pulsa el candado para cerrarlo y no dejes la sesión abierta.
-Los archivos que guardes manualmente salen sin el cifrado del contenedor .amx.
-La verificación de huellas detecta alteraciones; no valida revocación,
-confianza SAT ni sello de tiempo de firmas. Usa un lector de PDF compatible
-para comprobar la firma criptográfica del PDF original.
+MODULOS
+Pacientes, historias, consultas, urgencias, hospitalizaciones, evoluciones,
+indicaciones, egreso, recetas, documentos, escalas, adjuntos, agenda,
+perfil/logos, PIN, impresion PDF y firma electronica local con .cer/.key.
+Los recordatorios de agenda se muestran mientras el programa esta abierto.
 
-No utiliza una base SQLite activa dentro de Drive ni modifica la base Android.
-La futura edición de PC requiere almacenamiento cifrado, migraciones,
-resolución de conflictos e intercambio bidireccional probado.
+RESPALDO SIMPLE
+En Ajustes, crear respaldo genera un .ambak cifrado y abre Guardar como.
+Puedes elegir tu carpeta de Google Drive; conserva la contraseña para restaurar.
+Para pasar informacion del telefono a PC usa .ambak de Android.
+Para restaurar un respaldo creado en PC en Android usa APK 3.2.2 o posterior.
+Restaurar reemplaza la base local tras validacion y respaldo de emergencia.
+No combina bases ni sincroniza cambios: si editas en ambos dispositivos,
+conserva sus respaldos y no reemplaces una base sin revisar que cambios contiene.
+
+DATOS Y ACTUALIZACIONES
+La base esta fuera de la carpeta del programa, en la carpeta local de tu usuario.
+El instalador no incluye bases de datos, no sustituye la tuya al actualizar
+ y no borra expedientes al desinstalar. Utiliza el mismo usuario de Windows.
+Para cambiar de equipo/usuario utiliza el .ambak, no copies solo la base cifrada.
+
+FIRMA
+Los componentes necesarios estan incluidos. Selecciona tu .cer, la .key
+cifrada correspondiente y su contraseña cuando firmes. No se guardan en la base
+la clave privada ni la contraseña. No se valida confianza SAT, revocacion
+ni sello de tiempo confiable. La revision documental no es certificacion NOM.

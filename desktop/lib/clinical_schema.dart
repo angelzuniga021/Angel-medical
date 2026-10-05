@@ -1,0 +1,11 @@
+const clinicalSchema = <String>[
+  'CREATE TABLE IF NOT EXISTS clinical_drafts (draft_key TEXT PRIMARY KEY, patient_id INTEGER NOT NULL, table_name TEXT NOT NULL, parent_id INTEGER, payload TEXT NOT NULL, updated_at TEXT NOT NULL, FOREIGN KEY(patient_id) REFERENCES patients(id))',
+  'CREATE TABLE IF NOT EXISTS clinical_revisions (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_id INTEGER NOT NULL, table_name TEXT NOT NULL, record_id INTEGER NOT NULL, before_json TEXT NOT NULL, after_json TEXT NOT NULL, reason TEXT NOT NULL, created_at TEXT NOT NULL, FOREIGN KEY(patient_id) REFERENCES patients(id))',
+  'CREATE INDEX IF NOT EXISTS idx_revisions_record ON clinical_revisions(table_name,record_id)',
+  'CREATE TABLE IF NOT EXISTS clinical_tasks (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_id INTEGER NOT NULL, title TEXT NOT NULL, notes TEXT NOT NULL DEFAULT "", due_at TEXT, status TEXT NOT NULL DEFAULT "pendiente", created_at TEXT NOT NULL, updated_at TEXT NOT NULL, FOREIGN KEY(patient_id) REFERENCES patients(id))',
+  'CREATE TABLE IF NOT EXISTS clinical_attachments (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_id INTEGER NOT NULL, name TEXT NOT NULL, description TEXT NOT NULL DEFAULT "", mime TEXT NOT NULL, data BLOB NOT NULL, sha256 TEXT NOT NULL, created_at TEXT NOT NULL, FOREIGN KEY(patient_id) REFERENCES patients(id))',
+  'CREATE TABLE IF NOT EXISTS clinical_measurements (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_id INTEGER NOT NULL, date TEXT NOT NULL, systolic REAL, diastolic REAL, heart_rate REAL, temperature REAL, spo2 REAL, glucose REAL, weight REAL, height REAL, notes TEXT NOT NULL DEFAULT "", created_at TEXT NOT NULL, FOREIGN KEY(patient_id) REFERENCES patients(id))',
+  'CREATE TABLE IF NOT EXISTS clinical_templates (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, table_name TEXT NOT NULL, payload TEXT NOT NULL, created_at TEXT NOT NULL)',
+  'CREATE TABLE IF NOT EXISTS clinical_scales (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_id INTEGER NOT NULL, scale_id TEXT NOT NULL, scale_name TEXT NOT NULL, scale_version TEXT NOT NULL, date TEXT NOT NULL, score REAL NOT NULL, unit TEXT NOT NULL, summary TEXT NOT NULL, payload TEXT NOT NULL, created_at TEXT NOT NULL, FOREIGN KEY(patient_id) REFERENCES patients(id))',
+  'CREATE INDEX IF NOT EXISTS idx_scales_patient_date ON clinical_scales(patient_id,date)',
+];

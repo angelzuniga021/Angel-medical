@@ -1,4 +1,5 @@
 import 'clinical_prescription_pdf.dart';
+import 'pc_files.dart';
 import 'clinical_pdf_signature.dart';
 import 'dart:typed_data';
 import 'clinical_profile.dart';
@@ -23,7 +24,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:sqflite_sqlcipher/sqflite.dart'
+import 'pc_database.dart'
     show openDatabase;
 
 import 'db.dart';
@@ -163,11 +164,9 @@ class BackupService {
   static Future<File> createAndShareToCloud(String password) async {
     final file = await createPortable(password);
 
-    await Share.shareXFiles(
-      [XFile(file.path)],
-      subject: 'Respaldo Angel Medical',
-      text: 'Respaldo cifrado de Angel Medical. Guarda este archivo en Google Drive, OneDrive u otra nube segura.',
-    );
+    final saved = await savePcFile(file, title: 'Guardar respaldo .ambak · puedes elegir tu carpeta Drive');
+    if (saved == null) throw const FormatException('Guardado cancelado. La base local sigue intacta.');
+    await AppDb.instance.setSetting('last_backup_file', saved.path);
 
     await AppDb.instance.audit('SHARE_BACKUP_CLOUD', file.path);
     return file;

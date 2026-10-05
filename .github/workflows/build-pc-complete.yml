@@ -1,0 +1,114 @@
+name: Angel Medical PC completo
+on:
+  push:
+    branches: [main]
+    paths: ['desktop/**', 'lib/**', 'test/**', 'assets/**', 'pubspec.yaml', 'tools/prepare_desktop.py', '.github/workflows/build-pc-complete.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-2025
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: make tcl mingw-w64-x86_64-gcc mingw-w64-x86_64-openssl git
+      - name: Compilar SQLCipher y preparar firma incluida
+        shell: msys2 {0}
+        run: bash desktop/checks/build_native.sh
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+      - name: Preparar aplicación completa Windows
+        shell: pwsh
+        run: |
+          python tools/prepare_desktop.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cd desktop
+          flutter create --platforms=windows --project-name=angel_medical_pc .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Remove-Item test/widget_test.dart -ErrorAction SilentlyContinue
+          flutter pub get
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Probar aplicación, cifrado, edición, respaldo y firma Windows
+        working-directory: desktop
+        shell: pwsh
+        run: |
+          $native = (Resolve-Path 'native').Path
+          $env:PATH = "$native;$env:PATH"
+          $env:ANGEL_SQLCIPHER_DLL = Join-Path $native 'sqlcipher.dll'
+          $env:ANGEL_OPENSSL_EXE = Join-Path $native 'openssl.exe'
+          $env:OPENSSL_MODULES = $native
+          $env:ANGEL_TEST_DATA_DIR = Join-Path $env:RUNNER_TEMP 'angel-pc-test'
+          flutter analyze --no-fatal-infos --no-fatal-warnings
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          flutter test
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Compilar aplicación e incluir todos los componentes
+        working-directory: desktop
+        shell: pwsh
+        run: |
+          flutter build windows --release
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $dest = 'build/windows/x64/runner/Release'
+          Copy-Item native/*.dll $dest
+          Copy-Item native/openssl.exe $dest
+          Copy-Item native/*LICENSE* $dest
+          Copy-Item LEEME.txt $dest
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
+          $vs = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          $vc = Get-ChildItem (Join-Path $vs 'VC/Redist/MSVC') -Recurse -Filter vcruntime140.dll | Where-Object { $_.FullName -match 'x64.*Microsoft.VC.*CRT' } | Select-Object -First 1
+          if ($null -eq $vc) { throw 'No se encontró el runtime C++ redistribuible.' }
+          Copy-Item (Join-Path $vc.DirectoryName '*.dll') $dest
+      - name: Crear y probar instalador autónomo
+        shell: pwsh
+        run: |
+          $iscc = 'C:/Program Files (x86)/Inno Setup 6/ISCC.exe'
+          if (-not (Test-Path $iscc)) { choco install innosetup --yes --no-progress }
+          & $iscc desktop/installer/angel.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $setup = (Resolve-Path 'entrega-pc/Angel-Medical-PC-1.0-Instalador.exe').Path
+          $installDir = Join-Path $env:RUNNER_TEMP 'angel-installed'
+          $process = Start-Process $setup -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /DIR=`"$installDir`"" -PassThru -Wait
+          if ($process.ExitCode -ne 0) { throw 'Falló el instalador.' }
+          $env:ANGEL_TEST_DATA_DIR = Join-Path $env:RUNNER_TEMP 'angel-release-data'
+          $exe = Join-Path $installDir 'angel_medical_pc.exe'
+          $app = Start-Process $exe -ArgumentList '--enable-software-rendering' -PassThru
+          try {
+            Start-Sleep -Seconds 12
+            $app.Refresh()
+            if ($app.HasExited -or $app.MainWindowHandle -eq 0) { throw 'El programa instalado no abrió su ventana.' }
+            $db = Join-Path $env:ANGEL_TEST_DATA_DIR 'AngelMedical/databases/angel_medical_secure_v2.db'
+            if (-not (Test-Path $db)) { throw 'No se creó la base cifrada independiente.' }
+            Add-Type -AssemblyName System.Windows.Forms
+            Add-Type -AssemblyName System.Drawing
+            $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+            $bitmap = New-Object System.Drawing.Bitmap $bounds.Width, $bounds.Height
+            $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+            $graphics.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
+            $bitmap.Save((Join-Path $env:GITHUB_WORKSPACE 'desktop-preview.png'))
+            $graphics.Dispose(); $bitmap.Dispose()
+          } finally { if (-not $app.HasExited) { Stop-Process -Id $app.Id } }
+          $dbHash = (Get-FileHash $db).Hash
+          $process = Start-Process $setup -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /DIR=`"$installDir`"" -PassThru -Wait
+          if ($process.ExitCode -ne 0 -or (Get-FileHash $db).Hash -ne $dbHash) { throw 'La actualización alteró la base existente.' }
+          Get-FileHash $setup -Algorithm SHA256 | Format-List | Out-File 'entrega-pc/SHA256.txt'
+          Copy-Item desktop/LEEME.txt entrega-pc
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Angel-Medical-PC-1.0-Instalador-${{ github.run_number }}
+          path: entrega-pc/
+          retention-days: 30
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Revision-PC-completo-${{ github.run_number }}
+          path: |
+            desktop-preview.png
+            desktop/pc-fixture/
+          retention-days: 14
