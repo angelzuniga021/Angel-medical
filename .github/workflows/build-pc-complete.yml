@@ -117,7 +117,10 @@ jobs:
             $graphics.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
             $bitmap.Save((Join-Path $env:GITHUB_WORKSPACE 'desktop-preview.png'))
             $graphics.Dispose(); $bitmap.Dispose()
-          } finally { if (-not $app.HasExited) { Stop-Process -Id $app.Id } }
+          } finally {
+            if (-not $app.HasExited) { Stop-Process -Id $app.Id -Force }
+            if (-not $app.WaitForExit(10000)) { throw 'La aplicación de prueba no terminó de cerrar.' }
+          }
           $dbHash = (Get-FileHash $db).Hash
           $process = Start-Process $setup -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /DIR=`"$installDir`"" -PassThru -Wait
           if ($process.ExitCode -ne 0 -or (Get-FileHash $db).Hash -ne $dbHash) { throw 'La actualización alteró la base existente.' }
@@ -129,6 +132,7 @@ jobs:
           path: entrega-pc/
           retention-days: 30
       - uses: actions/upload-artifact@v7
+        if: always()
         with:
           name: Revision-PC-completo-${{ github.run_number }}
           path: |
