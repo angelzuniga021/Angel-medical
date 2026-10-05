@@ -12,14 +12,32 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/cache/restore@v4
+        id: native-cache
+        with:
+          path: |
+            desktop/native/*.dll
+            desktop/native/*.exe
+            desktop/native/*LICENSE*
+          key: pc-native-${{ runner.os }}-${{ hashFiles('desktop/checks/build_native.sh') }}
       - uses: msys2/setup-msys2@v2
+        if: steps.native-cache.outputs.cache-hit != 'true'
         with:
           msystem: MINGW64
           update: true
           install: make tcl mingw-w64-x86_64-gcc mingw-w64-x86_64-openssl git
       - name: Compilar SQLCipher y preparar firma incluida
+        if: steps.native-cache.outputs.cache-hit != 'true'
         shell: msys2 {0}
         run: bash desktop/checks/build_native.sh
+      - uses: actions/cache/save@v4
+        if: steps.native-cache.outputs.cache-hit != 'true'
+        with:
+          path: |
+            desktop/native/*.dll
+            desktop/native/*.exe
+            desktop/native/*LICENSE*
+          key: pc-native-${{ runner.os }}-${{ hashFiles('desktop/checks/build_native.sh') }}
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.47.2'
