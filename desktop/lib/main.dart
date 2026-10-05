@@ -115,11 +115,20 @@ class _DesktopHomeState extends State<DesktopHome> {
     }
     return '$value';
   }
+  Widget displayValue(String key, dynamic value) {
+    if (key.endsWith('logo_base64') && value is String) {
+      try {
+        return Image.memory(base64Decode(value), height: 90, fit: BoxFit.contain,
+          errorBuilder: (_, error, stack) => const Text('Logo recibido; imagen no legible.'));
+      } on FormatException { return const Text('Logo recibido; imagen no legible.'); }
+    }
+    return SelectableText(valueText(value));
+  }
   Widget fields(Map<String, dynamic> row) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
     for (final e in row.entries.where((e) => e.value != null && '${e.value}'.isNotEmpty && e.value is! Uint8List))
       Padding(padding: const EdgeInsets.only(bottom: 12), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(labels[e.key] ?? e.key.replaceAll('_', ' '), style: const TextStyle(fontWeight: FontWeight.w700)),
-        const SizedBox(height: 3), SelectableText(valueText(e.value)),
+        const SizedBox(height: 3), displayValue(e.key, e.value),
       ])),
   ]);
   Widget patientList() {
