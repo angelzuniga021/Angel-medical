@@ -39,6 +39,7 @@ shutil.copyfile(pc / 'platform' / 'pc_notifications.dart', lib / 'notification_s
 
 tests = pc / 'test'
 tests.mkdir(exist_ok=True)
+shutil.copytree(root / 'test' / 'fixtures', tests / 'fixtures', dirs_exist_ok=True)
 for f in tests.glob('*.dart'):
     f.unlink()
 for f in (root / 'test').glob('*.dart'):
