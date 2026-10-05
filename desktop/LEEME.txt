@@ -1,9 +1,9 @@
-ANGEL MEDICAL PC 0.1 - PRIMERA EDICION DE CONSULTA
+ANGEL MEDICAL PC 0.1.1 - PRIMERA EDICION DE CONSULTA
 
 1. Extrae TODO el ZIP en una carpeta de tu PC. No muevas el EXE solo:
    necesita sus DLL y la carpeta data.
 2. Abre angel_medical_pc.exe.
-3. En la APK 3.2 abre Preparar intercambio con PC, elige una contraseña,
+3. En la APK 3.2.1 abre Preparar intercambio con PC, elige una contraseña,
    genera el archivo .amx y compártelo a tu carpeta Drive.
 4. Descarga ese archivo en la PC. En el programa pulsa Abrir .amx.
    Introduce la contraseña que elegiste al exportar (no la contraseña de e.firma).
@@ -14,7 +14,7 @@ ANGEL MEDICAL PC 0.1 - PRIMERA EDICION DE CONSULTA
 Esta edición consulta la instantánea: NO permite editar ni sincroniza.
 Para ver cambios recientes, exporta otro .amx en Android y ábrelo en PC.
 .ambak continúa siendo el respaldo de recuperación de la APK.
-No es necesario desinstalar ni actualizar la APK 3.2 para usar este lector.
+No es necesario desinstalar ni actualizar la APK 3.2.1 para usar este lector.
 
 Los datos descifrados se conservan solamente en memoria mientras el expediente
 está abierto. Pulsa el candado para cerrarlo y no dejes la sesión abierta.

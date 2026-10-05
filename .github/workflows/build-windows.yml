@@ -2,7 +2,7 @@ name: Angel Medical PC
 on:
   push:
     branches: [main]
-    paths: ['desktop/**', 'lib/clinical_exchange_reader.dart', 'test/clinical_exchange_reader_test.dart', '.github/workflows/build-windows.yml']
+    paths: ['desktop/**', 'lib/clinical_exchange_reader.dart', 'lib/clinical_exchange_data.dart', 'test/clinical_exchange_reader_test.dart', '.github/workflows/build-windows.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -76,7 +76,7 @@ jobs:
           }
       - uses: actions/upload-artifact@v7
         with:
-          name: Angel-Medical-PC-0.1-${{ github.run_number }}
+          name: Angel-Medical-PC-0.1.1-${{ github.run_number }}
           path: desktop/build/windows/x64/runner/Release/
           retention-days: 30
       - uses: actions/upload-artifact@v7

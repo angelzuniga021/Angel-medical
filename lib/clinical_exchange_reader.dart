@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart' as hashing;
 import 'package:cryptography/cryptography.dart';
+import 'clinical_exchange_data.dart';
 
 /// Returns the original signed bytes; this is not a trust-chain verification.
 Uint8List originalSignedPdf(Uint8List attachment) {
@@ -48,7 +49,7 @@ class ClinicalSnapshot {
     final tables = <String, List<Map<String, dynamic>>>{};
     for (final entry in (obj['tables'] as Map).entries) {
       final name = '${entry.key}';
-      if (!RegExp(r'^[a-z_]+$').hasMatch(name) || entry.value is! List) throw const FormatException('Tabla no válida.');
+      if (!isExchangeTableName(name) || entry.value is! List) throw const FormatException('Tabla no válida.');
       final rows = <Map<String, dynamic>>[];
       final ids = <Object>{};
       for (final value in entry.value as List) {

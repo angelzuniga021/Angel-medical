@@ -1,15 +1,21 @@
-# Ángel Medical 3.2
+# Ángel Medical 3.2.1
 
 Aplicación Flutter para expediente clínico local cifrado en Android. Cada médico conserva su perfil y su propia base. Esta edición prepara intercambio futuro con PC, pero no incluye todavía una aplicación de escritorio ni sincronización entre dispositivos.
 
 ## Primera edición para PC
 
-Se añade un programa Windows separado, **Ángel Medical PC 0.1**, para consultar
+Se añade un programa Windows separado, **Ángel Medical PC 0.1.1**, para consultar
 instantáneas cifradas `.amx` exportadas por la APK 3.2. Incluye búsqueda de
 pacientes, historial clínico, escalas guardadas y extracción de adjuntos/PDF
 firmados originales. No permite edición ni sincronización automática.
 Consulta [PC_0_1.md](PC_0_1.md). El workflow **Angel Medical PC** entrega un ZIP
 con el EXE, sus DLL y `data`; hay que extraer todo el paquete.
+
+## Corrección 3.2.1
+
+Se corrige la exportación para PC que rechazaba la tabla `cie10` por contener
+dígitos. Android y PC 0.1.1 comparten la validación de nombres de tablas y
+se prueba la lectura cifrada del catálogo. Sin cambios de esquema ni ruta de base.
 
 ## Novedades de 3.2
 

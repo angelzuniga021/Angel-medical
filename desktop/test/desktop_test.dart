@@ -33,7 +33,7 @@ void main() {
     await tester.pumpWidget(const AngelPc());
     expect(find.text('Abrir expediente cifrado'), findsOneWidget);
     expect(find.textContaining('No se guarda una copia descifrada'), findsOneWidget);
-    expect(find.text('Ángel Medical PC · 0.1 · Consulta'), findsOneWidget);
+    expect(find.text('Ángel Medical PC · 0.1.1 · Consulta'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
   testWidgets('Opening page works at narrow width and enlarged text', (tester) async {

@@ -175,7 +175,7 @@ class _DesktopHomeState extends State<DesktopHome> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Ángel Medical PC · 0.1 · Consulta'), actions: [
+    appBar: AppBar(title: const Text('Ángel Medical PC · 0.1.1 · Consulta'), actions: [
       TextButton.icon(onPressed: busy ? null : open, icon: const Icon(Icons.folder_open), label: const Text('Abrir .amx')),
       if (snapshot != null) IconButton(tooltip: 'Cerrar expediente', onPressed: busy ? null : () => setState(() { snapshot = null; patient = null; query = ''; }), icon: const Icon(Icons.lock_outline)),
     ]),

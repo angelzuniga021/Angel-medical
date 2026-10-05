@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart' as hashing;
 import 'package:cryptography/cryptography.dart';
@@ -17,6 +18,7 @@ Map<String, dynamic> fixture() {
       'emergencies': [], 'hospitalizations': [{'id': 8, 'patient_id': 19}],
       'progress_notes': [{'id': 10, 'hospitalization_id': 8, 'assessment': 'Evolución original'}],
       'medical_orders': [], 'documents': [], 'appointments': [],
+      'cie10': [{'id': 27, 'code': 'J00', 'name': 'Rinofaringitis aguda'}],
       'app_settings': [{'setting_key': 'nom_profile', 'setting_value': '{"doctor":"Médico ficticio","license":"PRUEBA"}'}],
       'clinical_attachments': [exchangeRow({'id': 5, 'patient_id': 19, 'data': data, 'sha256': hashing.sha256.convert(data).toString(), 'name': 'test.bin'})],
       'clinical_scales': [{'id': 6, 'patient_id': 19, 'score': 0, 'summary': 'Resultado original', 'payload': '{"answers":{"a":0}}'}],
@@ -33,6 +35,14 @@ Future<Map<String, dynamic>> encrypted(Map<String, dynamic> snapshot) async {
 }
 
 void main() {
+  test('Exporter and reader accept every real schema table including cie10; reject unsafe names', () {
+    final source = File('lib/db.dart').existsSync() ? File('lib/db.dart').readAsStringSync() : File('../lib/db.dart').readAsStringSync();
+    final names = RegExp(r'CREATE TABLE (?:IF NOT EXISTS )?([a-z0-9_]+)').allMatches(source).map((m) => m.group(1)!).toSet();
+    expect(names, contains('cie10'));
+    for (final name in names) { expect(isExchangeTableName(name), isTrue, reason: name); }
+    for (final name in ['1table', 'cie10;DROP TABLE patients', 'patients--', 'bad name', '', 'a.b']) { expect(isExchangeTableName(name), isFalse, reason: name); }
+    expect(ClinicalSnapshot.parse(jsonEncode(fixture())).rows('cie10').single['code'], 'J00');
+  });
   test('Signed PDF extraction retains exact bytes and rejects modified payload', () {
     final pdf = Uint8List.fromList([37, 80, 68, 70, 45, 49, 10, 0, 255]);
     final payload = {'format': 'angel-medical-signed-pdf-v1', 'pdf': base64Encode(pdf), 'pdf_sha256': hashing.sha256.convert(pdf).toString()};
@@ -44,6 +54,7 @@ void main() {
     final envelope = await encrypted(fixture());
     final result = await readClinicalExchange(jsonEncode(envelope), 'contraseña prueba');
     expect(result.rows('patients').single['id'], 19);
+    expect(result.rows('cie10').single['code'], 'J00');
     expect(result.profile['doctor'], 'Médico ficticio');
     expect(result.patientRows('progress_notes', 19).single['assessment'], 'Evolución original');
     expect(result.rows('clinical_scales').single['score'], 0);
