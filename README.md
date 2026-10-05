@@ -1,15 +1,18 @@
-# Ángel Medical 3.2.1
+# Ángel Medical · Android 3.2.2 y PC 1.0
 
-Aplicación Flutter para expediente clínico local cifrado en Android. Cada médico conserva su perfil y su propia base. Esta edición prepara intercambio futuro con PC, pero no incluye todavía una aplicación de escritorio ni sincronización entre dispositivos.
+Aplicación Flutter para expediente clínico local cifrado en Android y Windows. Cada médico conserva su perfil y su propia base. Ambas ediciones usan respaldos `.ambak`; no incluyen sincronización automática entre dispositivos.
 
-## Primera edición para PC
+## Aplicación completa para PC
 
-Se añade un programa Windows separado, **Ángel Medical PC 0.1.1**, para consultar
-instantáneas cifradas `.amx` exportadas por la APK 3.2. Incluye búsqueda de
-pacientes, historial clínico, escalas guardadas y extracción de adjuntos/PDF
-firmados originales. No permite edición ni sincronización automática.
-Consulta [PC_0_1.md](PC_0_1.md). El workflow **Angel Medical PC** entrega un ZIP
-con el EXE, sus DLL y `data`; hay que extraer todo el paquete.
+**Ángel Medical PC 1.0** funciona de forma independiente: permite comenzar desde cero o importar un respaldo `.ambak` del teléfono. Incluye edición de pacientes e historia, consultas, hospitalización, agenda, documentos/recetas, escalas, adjuntos, perfil/logos, impresión y firma criptográfica local de PDF.
+
+El workflow **Angel Medical PC completo** entrega un ZIP con el instalador `Angel-Medical-PC-1.0-Instalador.exe`. Extraer y ejecutar el instalador en Windows 10/11 x64; no hace falta instalar Python ni herramientas de desarrollo. Los componentes necesarios están incluidos y la base se conserva fuera de la carpeta del programa. Consulta [PC_1_0.md](PC_1_0.md).
+
+En PC, guardar respaldo abre **Guardar como** para elegir una carpeta, incluida Drive. Los cambios clínicos se conservan en la base local. El lector PC 0.1.1 y `.amx` quedan como formato de intercambio avanzado/histórico; el respaldo habitual compartido es `.ambak`.
+
+## Corrección Android 3.2.2
+
+La validación/restauración `.ambak` acepta el esquema actual 7, incluye conteos de escalas y verifica la integridad de adjuntos. No se cambia el esquema, ruta de base ni firma de actualización Android. Usar 3.2.2 para restaurar respaldos creados por PC 1.0.
 
 ## Corrección 3.2.1
 
@@ -37,7 +40,7 @@ se prueba la lectura cifrada del catálogo. Sin cambios de esquema ni ruta de ba
 - Mapa corporal interactivo con vistas anterior/posterior, varias regiones, intensidad opcional y descripción. Se conserva en la nota, revisión, PDF y respaldo.
 - Firma criptográfica local integrada al PDF con `.cer` y `.key` cifrada. Se conservan las firmas previas y se exporta la versión exacta firmada. Clave privada y contraseña no se guardan en la base.
 - Revisión de documentación y pendientes normativos. No constituye certificación ni dictamen de cumplimiento NOM.
-- Exportación cifrada `.amx` para un futuro lector en PC, compartible por el menú del sistema, incluido Drive cuando esté disponible. La recuperación actual sigue usando `.ambak`.
+- Exportación cifrada `.amx` para intercambio avanzado; el respaldo y recuperación habitual en Android y PC utiliza `.ambak`.
 - Conservación del perfil existente al actualizar; historia guiada, resumen del paciente, historial completo, correcciones auditadas, agenda, documentos, PIN/biometría y catálogo CIE-10 precargado.
 
 Consulta [CAMBIOS_2_8.md](CAMBIOS_2_8.md), [REVISION_NORMATIVA.md](REVISION_NORMATIVA.md) y [PC_DRIVE.md](PC_DRIVE.md).
