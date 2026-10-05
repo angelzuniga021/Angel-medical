@@ -3,6 +3,15 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart' as hashing;
 import 'package:cryptography/cryptography.dart';
 
+/// Returns the original signed bytes; this is not a trust-chain verification.
+Uint8List originalSignedPdf(Uint8List attachment) {
+  final payload = jsonDecode(utf8.decode(attachment));
+  if (payload is! Map || payload['format'] != 'angel-medical-signed-pdf-v1' || payload['pdf'] is! String) throw const FormatException('Este paquete no contiene un PDF integrado compatible. Guarda el adjunto original.');
+  final bytes = base64Decode(payload['pdf']);
+  if (hashing.sha256.convert(bytes).toString() != payload['pdf_sha256']) throw const FormatException('El PDF no coincide con su huella registrada.');
+  return bytes;
+}
+
 /// AMX v1 reader. No SQL statements are executed and no source file is changed.
 class ClinicalSnapshot {
   final Map<String, dynamic> metadata;
@@ -12,8 +21,10 @@ class ClinicalSnapshot {
   Map<String, dynamic> get profile {
     for (final row in rows('app_settings')) {
       if (row['setting_key'] == 'nom_profile') {
-        final value = jsonDecode('${row['setting_value']}');
-        if (value is Map<String, dynamic>) return value;
+        try {
+          final value = jsonDecode('${row['setting_value']}');
+          if (value is Map<String, dynamic>) return value;
+        } on FormatException { return {}; }
       }
     }
     return {};

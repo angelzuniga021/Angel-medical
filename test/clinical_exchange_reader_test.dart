@@ -33,6 +33,13 @@ Future<Map<String, dynamic>> encrypted(Map<String, dynamic> snapshot) async {
 }
 
 void main() {
+  test('Signed PDF extraction retains exact bytes and rejects modified payload', () {
+    final pdf = Uint8List.fromList([37, 80, 68, 70, 45, 49, 10, 0, 255]);
+    final payload = {'format': 'angel-medical-signed-pdf-v1', 'pdf': base64Encode(pdf), 'pdf_sha256': hashing.sha256.convert(pdf).toString()};
+    expect(originalSignedPdf(Uint8List.fromList(utf8.encode(jsonEncode(payload)))), pdf);
+    payload['pdf'] = base64Encode([37, 80, 68, 70, 0]);
+    expect(() => originalSignedPdf(Uint8List.fromList(utf8.encode(jsonEncode(payload)))), throwsFormatException);
+  });
   test('Android encrypted exchange preserves identity, profile, relations, zero scores and binary bytes', () async {
     final envelope = await encrypted(fixture());
     final result = await readClinicalExchange(jsonEncode(envelope), 'contraseña prueba');

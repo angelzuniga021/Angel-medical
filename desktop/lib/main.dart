@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:crypto/crypto.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -52,7 +51,8 @@ class AngelPc extends StatelessWidget {
 }
 
 class DesktopHome extends StatefulWidget {
-  const DesktopHome({super.key});
+  final ClinicalSnapshot? initialSnapshot;
+  const DesktopHome({super.key, this.initialSnapshot});
   @override
   State<DesktopHome> createState() => _DesktopHomeState();
 }
@@ -61,6 +61,8 @@ class _DesktopHomeState extends State<DesktopHome> {
   Map<String, dynamic>? patient;
   String query = '', section = 'patients';
   bool busy = false;
+  @override
+  void initState() { super.initState(); snapshot = widget.initialSnapshot; }
   void message(String text) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text))); }
   Future<void> open() async {
     if (busy) return;
@@ -95,10 +97,7 @@ class _DesktopHomeState extends State<DesktopHome> {
       var bytes = row['data'] as Uint8List;
       var name = '${row['name']}';
       if (pdf) {
-        final payload = jsonDecode(utf8.decode(bytes)) as Map<String, dynamic>;
-        if (payload['format'] != 'angel-medical-signed-pdf-v1') throw const FormatException('Este paquete no contiene un PDF integrado compatible. Guarda el adjunto original.');
-        bytes = base64Decode('${payload['pdf']}');
-        if (sha256.convert(bytes).toString() != payload['pdf_sha256']) throw const FormatException('El PDF no coincide con su huella registrada.');
+        bytes = originalSignedPdf(bytes);
         name = '${p.basenameWithoutExtension(name)}.pdf';
       }
       final safeName = name.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');

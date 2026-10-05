@@ -50,8 +50,34 @@ jobs:
           if ($null -eq $vc) { throw 'No se encontró el runtime C++ redistribuible.' }
           Copy-Item (Join-Path $vc.DirectoryName '*.dll') $dest
           Get-FileHash "$dest/angel_medical_pc.exe" -Algorithm SHA256 | Format-List | Out-File "$dest/SHA256.txt"
+      - name: Comprobar inicio del ejecutable Windows
+        shell: pwsh
+        run: |
+          $exe = (Resolve-Path 'desktop/build/windows/x64/runner/Release/angel_medical_pc.exe').Path
+          $app = Start-Process $exe -ArgumentList '--enable-software-rendering' -PassThru
+          try {
+            Start-Sleep -Seconds 8
+            $app.Refresh()
+            if ($app.HasExited -or $app.MainWindowHandle -eq 0) { throw 'El ejecutable no abrió su ventana.' }
+            Add-Type -AssemblyName System.Windows.Forms
+            Add-Type -AssemblyName System.Drawing
+            $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+            $bitmap = New-Object System.Drawing.Bitmap $bounds.Width, $bounds.Height
+            $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+            $graphics.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
+            $bitmap.Save((Join-Path $env:GITHUB_WORKSPACE 'desktop-preview.png'))
+            $graphics.Dispose()
+            $bitmap.Dispose()
+          } finally {
+            if (-not $app.HasExited) { Stop-Process -Id $app.Id }
+          }
       - uses: actions/upload-artifact@v7
         with:
           name: Angel-Medical-PC-0.1-${{ github.run_number }}
           path: desktop/build/windows/x64/runner/Release/
           retention-days: 30
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Revision-PC-${{ github.run_number }}
+          path: desktop-preview.png
+          retention-days: 14
