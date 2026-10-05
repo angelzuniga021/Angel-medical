@@ -9,22 +9,22 @@ lib.mkdir(exist_ok=True)
 for file in lib.glob('*.dart'):
     file.unlink()
 for file in (root / 'lib').glob('*.dart'):
-    content = file.read_text()
+    content = file.read_text(encoding='utf-8')
     content = content.replace("'package:sqflite_sqlcipher/sqflite.dart'", "'pc_database.dart'").replace('package:angel_medical_mobile/', 'package:angel_medical_pc/')
-    (lib / file.name).write_text(content)
+    (lib / file.name).write_text(content, encoding='utf-8')
 for file in (pc / 'platform').glob('*.dart'):
     shutil.copyfile(file, lib / file.name)
 
 # Same dependencies, replacing only the database backend. Pin sqlite3 v2 for
 # a deliberate SQLCipher DLL loader instead of native plain-SQLite build hooks.
-pub = (root / 'pubspec.yaml').read_text().replace('name: angel_medical_mobile', 'name: angel_medical_pc').replace('version: 3.2.2+122', 'version: 1.0.0+10')
+pub = (root / 'pubspec.yaml').read_text(encoding='utf-8').replace('name: angel_medical_mobile', 'name: angel_medical_pc').replace('version: 3.2.2+122', 'version: 1.0.0+10')
 pub = pub.replace('  sqflite_sqlcipher: ^3.4.1', '  sqflite_common: ^2.5.6\n  sqflite_common_ffi: 2.3.7\n  sqlite3: 2.9.4')
-(pc / 'pubspec.yaml').write_text(pub)
+(pc / 'pubspec.yaml').write_text(pub, encoding='utf-8')
 shutil.copytree(root / 'assets', pc / 'assets', dirs_exist_ok=True)
 
 def edit(name, fn):
     path = lib / name
-    path.write_text(fn(path.read_text()))
+    path.write_text(fn(path.read_text(encoding='utf-8')), encoding='utf-8')
 
 edit('clinical_signature.dart', lambda s: s.replace("import 'clinical_pdf_signature.dart';", "import 'clinical_pdf_signature.dart';\nimport 'pc_signature.dart';\nimport 'pc_files.dart';").replace("const signatureChannel = MethodChannel('angel_medical/signature');", 'const signatureChannel = PcSignatureChannel();').replace("await Share.shareXFiles([XFile(file.path)], text: 'Receta con firma digital integrada.');", "await savePcFile(file, title: 'Guardar receta firmada');").replace("await Share.shareXFiles([XFile(file.path)], text: 'PDF y firma separada. Confianza y revocación SAT pendientes de verificar.');", "await savePcFile(file, title: 'Guardar paquete de firma');"))
 
@@ -42,7 +42,7 @@ tests.mkdir(exist_ok=True)
 for f in tests.glob('*.dart'):
     f.unlink()
 for f in (root / 'test').glob('*.dart'):
-    (tests / f.name).write_text(f.read_text().replace('package:angel_medical_mobile/', 'package:angel_medical_pc/'))
+    (tests / f.name).write_text(f.read_text(encoding='utf-8').replace('package:angel_medical_mobile/', 'package:angel_medical_pc/'), encoding='utf-8')
 for f in (pc / 'checks').glob('*_test.dart'):
     shutil.copyfile(f, tests / f.name)
 print('Windows: módulos compartidos, SQLCipher, firma, respaldo y pruebas preparados.')
