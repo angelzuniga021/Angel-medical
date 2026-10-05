@@ -46,7 +46,10 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $dest = 'build/windows/x64/runner/Release'
           Copy-Item LEEME.txt $dest/LEEME.txt
-          $vc = Get-ChildItem 'C:/Program Files/Microsoft Visual Studio/2022' -Recurse -Filter vcruntime140.dll | Where-Object { $_.FullName -match 'Redist.*x64.*Microsoft.VC.*CRT' } | Select-Object -First 1
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
+          $vs = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          $redist = Join-Path $vs 'VC/Redist/MSVC'
+          $vc = Get-ChildItem $redist -Recurse -Filter vcruntime140.dll | Where-Object { $_.FullName -match 'x64.*Microsoft.VC.*CRT' } | Select-Object -First 1
           if ($null -eq $vc) { throw 'No se encontró el runtime C++ redistribuible.' }
           Copy-Item (Join-Path $vc.DirectoryName '*.dll') $dest
           Get-FileHash "$dest/angel_medical_pc.exe" -Algorithm SHA256 | Format-List | Out-File "$dest/SHA256.txt"
