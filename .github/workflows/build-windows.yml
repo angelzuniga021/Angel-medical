@@ -1,0 +1,57 @@
+name: Angel Medical PC
+on:
+  push:
+    branches: [main]
+    paths: ['desktop/**', 'lib/clinical_exchange_reader.dart', 'test/clinical_exchange_reader_test.dart', '.github/workflows/build-windows.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-2025
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+      - name: Preparar proyecto de escritorio
+        shell: pwsh
+        run: |
+          Copy-Item lib/clinical_exchange_reader.dart desktop/lib/clinical_exchange_reader.dart
+          Copy-Item lib/clinical_exchange_data.dart desktop/lib/clinical_exchange_data.dart
+          $test = (Get-Content test/clinical_exchange_reader_test.dart -Raw).Replace("../lib/clinical_exchange_data.dart", "../lib/clinical_exchange_data.dart")
+          Set-Content desktop/test/clinical_exchange_reader_test.dart $test -Encoding utf8
+          cd desktop
+          flutter create --platforms=windows --project-name=angel_medical_pc .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Remove-Item test/widget_test.dart -ErrorAction SilentlyContinue
+          flutter pub get
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Analizar y probar Windows
+        working-directory: desktop
+        shell: pwsh
+        run: |
+          flutter analyze --no-fatal-infos --no-fatal-warnings
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          flutter test
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Compilar Windows
+        working-directory: desktop
+        shell: pwsh
+        run: |
+          flutter build windows --release
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $dest = 'build/windows/x64/runner/Release'
+          Copy-Item LEEME.txt $dest/LEEME.txt
+          $vc = Get-ChildItem 'C:/Program Files/Microsoft Visual Studio/2022' -Recurse -Filter vcruntime140.dll | Where-Object { $_.FullName -match 'Redist.*x64.*Microsoft.VC.*CRT' } | Select-Object -First 1
+          if ($null -eq $vc) { throw 'No se encontró el runtime C++ redistribuible.' }
+          Copy-Item (Join-Path $vc.DirectoryName '*.dll') $dest
+          Get-FileHash "$dest/angel_medical_pc.exe" -Algorithm SHA256 | Format-List | Out-File "$dest/SHA256.txt"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Angel-Medical-PC-0.1-${{ github.run_number }}
+          path: desktop/build/windows/x64/runner/Release/
+          retention-days: 30

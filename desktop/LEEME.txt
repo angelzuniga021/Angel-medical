@@ -1,0 +1,28 @@
+ANGEL MEDICAL PC 0.1 - PRIMERA EDICION DE CONSULTA
+
+1. Extrae TODO el ZIP en una carpeta de tu PC. No muevas el EXE solo:
+   necesita sus DLL y la carpeta data.
+2. Abre angel_medical_pc.exe.
+3. En la APK 3.2 abre Preparar intercambio con PC, elige una contraseña,
+   genera el archivo .amx y compártelo a tu carpeta Drive.
+4. Descarga ese archivo en la PC. En el programa pulsa Abrir .amx.
+   Introduce la contraseña que elegiste al exportar (no la contraseña de e.firma).
+5. Busca un paciente y selecciona la sección clínica.
+6. En Adjuntos y firmas puedes guardar el adjunto completo y, para paquetes
+   compatibles, extraer el PDF firmado original sin regenerarlo.
+
+Esta edición consulta la instantánea: NO permite editar ni sincroniza.
+Para ver cambios recientes, exporta otro .amx en Android y ábrelo en PC.
+.ambak continúa siendo el respaldo de recuperación de la APK.
+No es necesario desinstalar ni actualizar la APK 3.2 para usar este lector.
+
+Los datos descifrados se conservan solamente en memoria mientras el expediente
+está abierto. Pulsa el candado para cerrarlo y no dejes la sesión abierta.
+Los archivos que guardes manualmente salen sin el cifrado del contenedor .amx.
+La verificación de huellas detecta alteraciones; no valida revocación,
+confianza SAT ni sello de tiempo de firmas. Usa un lector de PDF compatible
+para comprobar la firma criptográfica del PDF original.
+
+No utiliza una base SQLite activa dentro de Drive ni modifica la base Android.
+La futura edición de PC requiere almacenamiento cifrado, migraciones,
+resolución de conflictos e intercambio bidireccional probado.
