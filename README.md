@@ -1,12 +1,20 @@
-# Ángel Medical · Android 3.2.2 y PC 1.0
+# Ángel Medical · Android 3.2.3 y PC 1.0.1
 
 Aplicación Flutter para expediente clínico local cifrado en Android y Windows. Cada médico conserva su perfil y su propia base. Ambas ediciones usan respaldos `.ambak`; no incluyen sincronización automática entre dispositivos.
 
+## Actualización de estabilidad Android 3.2.3 / PC 1.0.1
+
+- Los pacientes existentes permiten entrar al expediente aunque el respaldo carezca de perfil médico; Inicio sigue mostrando los campos pendientes. No se inventa ni atribuye una identidad.
+- En PC, extensión del archivo conservada automáticamente, carpeta de guardado recordada por usuario de Windows y fecha del último respaldo guardado actualizada al completar la copia.
+- Importación Excel de medicamentos con vista previa, confirmación y omisión de duplicados tanto del archivo como de la base; conserva favoritos e historial existentes. No incluye un nuevo catálogo externo ni dosis precargadas.
+- Guía rápida en Ajustes (icono de ayuda) para registros, perfil, respaldos, cambio de equipo, recetas y catálogos.
+- Misma base, esquema 7 e identificadores de instalación; actualización sobre la edición anterior. Restaurar sigue sustituyendo la base; no sincroniza cambios.
+
 ## Aplicación completa para PC
 
-**Ángel Medical PC 1.0** funciona de forma independiente: permite comenzar desde cero o importar un respaldo `.ambak` del teléfono. Incluye edición de pacientes e historia, consultas, hospitalización, agenda, documentos/recetas, escalas, adjuntos, perfil/logos, impresión y firma criptográfica local de PDF.
+**Ángel Medical PC 1.0.1** funciona de forma independiente: permite comenzar desde cero o importar un respaldo `.ambak` del teléfono. Incluye edición de pacientes e historia, consultas, hospitalización, agenda, documentos/recetas, escalas, adjuntos, perfil/logos, impresión y firma criptográfica local de PDF.
 
-El workflow **Angel Medical PC completo** entrega un ZIP con el instalador `Angel-Medical-PC-1.0-Instalador.exe`. Extraer y ejecutar el instalador en Windows 10/11 x64; no hace falta instalar Python ni herramientas de desarrollo. Los componentes necesarios están incluidos y la base se conserva fuera de la carpeta del programa. Consulta [PC_1_0.md](PC_1_0.md).
+El workflow **Angel Medical PC completo** entrega un ZIP con el instalador `Angel-Medical-PC-1.0.1-Instalador.exe`. Extraer y ejecutar el instalador en Windows 10/11 x64; no hace falta instalar Python ni herramientas de desarrollo. Los componentes necesarios están incluidos y la base se conserva fuera de la carpeta del programa. Consulta [PC_1_0.md](PC_1_0.md).
 
 En PC, guardar respaldo abre **Guardar como** para elegir una carpeta, incluida Drive. Los cambios clínicos se conservan en la base local. El lector PC 0.1.1 y `.amx` quedan como formato de intercambio avanzado/histórico; el respaldo habitual compartido es `.ambak`.
 
