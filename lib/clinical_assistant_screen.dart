@@ -17,7 +17,8 @@ class ClinicalAssistantScreen extends StatefulWidget {
   final String table;
   final String encounter;
   final int? recordId;
-  const ClinicalAssistantScreen({super.key,required this.patient,required this.current,required this.table,required this.encounter,this.recordId});
+  final List<Map<String,Object?>>? recentConsultations;
+  const ClinicalAssistantScreen({super.key,required this.patient,required this.current,required this.table,required this.encounter,this.recordId,this.recentConsultations});
   @override
   State<ClinicalAssistantScreen> createState()=>_ClinicalAssistantState();
 }
@@ -26,7 +27,7 @@ class _ClinicalAssistantState extends State<ClinicalAssistantScreen> with Widget
   final result=<String,TextEditingController>{};
   final selected=<String>{};
   late Map<String,String> current;
-  bool busy=false, reviewed=false, loading=true, recording=false;
+  bool busy=false, reviewed=false, loading=true, recording=false, allowLeave=false;
   String? error;
   String historyError='';
   String origin='Captura manual';
@@ -36,6 +37,7 @@ class _ClinicalAssistantState extends State<ClinicalAssistantScreen> with Widget
   @override
   void initState(){super.initState();current=Map.of(widget.current);WidgetsBinding.instance.addObserver(this);loadHistory();}
   Future<void> loadHistory() async {
+    if(widget.recentConsultations!=null){history=widget.recentConsultations!;loading=false;return;}
     try {
       final db=await AppDb.instance.database;
       final rows=await db.query('consultations',where:'patient_id=? AND date<=?${widget.table=='consultations' && widget.recordId!=null ? ' AND id!=?' : ''}',whereArgs:[widget.patient['id'],widget.encounter,if(widget.table=='consultations' && widget.recordId!=null) widget.recordId],orderBy:'date DESC, id DESC',limit:20);
@@ -124,11 +126,21 @@ class _ClinicalAssistantState extends State<ClinicalAssistantScreen> with Widget
       final ok=await showDialog<bool>(context:context,builder:(ctx)=>AlertDialog(title:const Text('Reemplazar campos del borrador'),content:Text('Se reemplazará el contenido actual de:\n${overwrite.map((k)=>clinicalLabels[k]??nomLabels[k]??k).join('\n')}\n\nLos registros firmados no se modifican desde el asistente.'),actions:[TextButton(onPressed:()=>Navigator.pop(ctx,false),child:const Text('Cancelar')),FilledButton(onPressed:()=>Navigator.pop(ctx,true),child:const Text('Aplicar cambios revisados'))]));
       if(ok!=true || !mounted)return;
     }
-    Navigator.pop(context,changes);
+    finish(changes);
+  }
+  void finish(Map<String,String>? changes){
+    setState(()=>allowLeave=true);
+    WidgetsBinding.instance.addPostFrameCallback((_){if(mounted)Navigator.pop(context,changes);});
+  }
+  Future<void> leave() async {
+    if(busy)return;
+    if(text.text.trim().isEmpty && result.isEmpty && current['nom_body_map']==widget.current['nom_body_map']){finish(null);return;}
+    final ok=await showDialog<bool>(context:context,builder:(ctx)=>AlertDialog(title:const Text('¿Salir sin aplicar?'),content:const Text('El texto y las propuestas de este asistente no se han aplicado al borrador. Si sales, se descartarán. La nota original se conserva.'),actions:[TextButton(onPressed:()=>Navigator.pop(ctx,false),child:const Text('Seguir revisando')),TextButton(onPressed:()=>Navigator.pop(ctx,true),child:const Text('Descartar y salir'))]));
+    if(ok==true && mounted)finish(null);
   }
   Widget panel(String title,List<Widget> children)=>Card(child:Padding(padding:const EdgeInsets.all(18),child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[Text(title,style:Theme.of(context).textTheme.titleLarge),const SizedBox(height:12),...children])));
   @override
-  Widget build(BuildContext context)=>PopScope(canPop:!busy,child:DefaultTabController(length:3,child:Scaffold(
+  Widget build(BuildContext context)=>PopScope(canPop:allowLeave,onPopInvokedWithResult:(didPop,result){if(!didPop)leave();},child:DefaultTabController(length:3,child:Scaffold(
     appBar:AppBar(title:const Text('Asistente de consulta'),actions:[IconButton(tooltip:'Configurar IA',onPressed:busy?null:configure,icon:const Icon(Icons.settings_outlined))],bottom:const TabBar(tabs:[Tab(text:'Redactar'),Tab(text:'Expediente'),Tab(text:'Comparar')])),
     body:TabBarView(children:[
       ListView(padding:const EdgeInsets.all(16),children:[
