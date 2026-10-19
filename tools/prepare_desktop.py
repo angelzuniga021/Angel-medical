@@ -17,7 +17,8 @@ for file in (pc / 'platform').glob('*.dart'):
 
 # Same dependencies, replacing only the database backend. Pin sqlite3 v2 for
 # a deliberate SQLCipher DLL loader instead of native plain-SQLite build hooks.
-pub = (root / 'pubspec.yaml').read_text(encoding='utf-8').replace('name: angel_medical_mobile', 'name: angel_medical_pc').replace('version: 3.2.3+123', 'version: 1.0.1+11')
+pub = (root / 'pubspec.yaml').read_text(encoding='utf-8').replace('name: angel_medical_mobile', 'name: angel_medical_pc').replace('version: 3.3.0+130', 'version: 1.1.0+20')
+pub = pub.replace('  speech_to_text: 7.4.0\n', '')
 pub = pub.replace('  sqflite_sqlcipher: ^3.4.1', '  sqflite_common: ^2.5.6\n  sqflite_common_ffi: 2.3.7\n  sqlite3: 2.9.4')
 (pc / 'pubspec.yaml').write_text(pub, encoding='utf-8')
 shutil.copytree(root / 'assets', pc / 'assets', dirs_exist_ok=True)
@@ -32,7 +33,7 @@ edit('services.dart', lambda s: s.replace("import 'clinical_prescription_pdf.dar
 
 # Unified version, direct save/restore language, standalone initial setup.
 edit('main.dart', lambda s: s.replace("'Angel Medical',", "'Angel Medical PC',").replace('En el menú de Android selecciona Google Drive para guardarlo.', 'Elige una carpeta para guardar el .ambak; puedes usar Drive.').replace("                  child: const Text('Completar perfil del médico'),\n                ),", "                  child: const Text('Completar perfil del médico'),\n                ),\n              if (configured != null) TextButton.icon(onPressed: () async { await const SettingsScreen().restoreBackup(context); await load(); }, icon: const Icon(Icons.restore), label: const Text('Importar respaldo .ambak del teléfono')),\n              const Padding(padding: EdgeInsets.only(top: 12), child: Text('Puedes configurar tu consulta o importar un respaldo. Completar el perfil conserva los expedientes.'))," ).replace('Guardar respaldo en Google Drive', 'Guardar respaldo .ambak').replace('Crea un .ambak cifrado y abre el menú para elegir Drive', 'Elige una carpeta, incluida Drive; se recuerda el último destino').replace('Último respaldo creado', 'Último respaldo guardado').replace("getSetting('last_backup_at')", "getSetting('last_backup_saved_at')"))
-edit('clinical_home.dart', lambda s: s.replace('Angel Medical 3.2.3', 'Angel Medical PC 1.0.1').replace('Sincronización entre dispositivos no incluida.', 'Base local de esta PC · Respaldos .ambak compatibles con Android.').replace("        clinicalPanel(context, 'PC y Drive · preparación', [", "        clinicalPanel(context, 'Intercambio avanzado · .amx', ["))
+edit('clinical_home.dart', lambda s: s.replace('Angel Medical 3.3.0', 'Angel Medical PC 1.1.0').replace('Sincronización entre dispositivos no incluida.', 'Base local de esta PC · Respaldos .ambak compatibles con Android.').replace("        clinicalPanel(context, 'PC y Drive · preparación', [", "        clinicalPanel(context, 'Intercambio avanzado · .amx', ["))
 
 # Windows notifications are in-process timers, never install services silently.
 shutil.copyfile(pc / 'platform' / 'pc_notifications.dart', lib / 'notification_service.dart')

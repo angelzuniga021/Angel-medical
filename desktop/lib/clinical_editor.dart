@@ -1,3 +1,4 @@
+import 'clinical_assistant_screen.dart';
 import 'clinical_scales_screen.dart';
 import 'clinical_body_map.dart';
 import 'clinical_body_data.dart';
@@ -151,6 +152,18 @@ class _ClinicalEditorState extends State<ClinicalEditor>
               'No se pudo cargar el borrador. Vuelve a abrir la pantalla.',
         );
     }
+  }
+
+  Future<void> openAssistant() async {
+    final changes = await Navigator.push<Map<String, String>>(context,
+      MaterialPageRoute(builder: (_) => ClinicalAssistantScreen(patient: widget.patient,
+        current: input, table: widget.table, encounter: encounter.toIso8601String(), recordId: widget.original?['id'] as int?)));
+    if (changes == null || !mounted) return;
+    for (final e in changes.entries) {
+      fields[e.key]?.text = e.value;
+    }
+    changed();
+    setState(() {});
   }
 
   Future<void> reloadProfile() async {
@@ -601,6 +614,8 @@ class _ClinicalEditorState extends State<ClinicalEditor>
             '${widget.original == null ? 'Nueva atención' : 'Corregir nota'} · ${noteNames[widget.table]}',
           ),
           actions: [
+            if (['consultations', 'emergencies', 'progress_notes'].contains(widget.table))
+              IconButton(tooltip: 'Asistente de consulta', onPressed: ready && !busy ? openAssistant : null, icon: const Icon(Icons.auto_awesome)),
             PopupMenuButton<String>(
               enabled: ready && !busy,
               onSelected: (v) {

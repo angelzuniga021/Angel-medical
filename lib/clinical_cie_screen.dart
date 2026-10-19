@@ -6,7 +6,8 @@ import 'db.dart';
 
 class ClinicalCieScreen extends StatefulWidget {
   final bool select;
-  const ClinicalCieScreen({super.key, this.select = false});
+  final String initialQuery;
+  const ClinicalCieScreen({super.key, this.select = false, this.initialQuery = ''});
   @override
   State<ClinicalCieScreen> createState() => _ClinicalCieScreenState();
 }
@@ -19,7 +20,7 @@ class _ClinicalCieScreenState extends State<ClinicalCieScreen> {
   String? error;
   List<Map<String, Object?>> rows = [];
   @override
-  void initState() { super.initState(); query.addListener(changed); }
+  void initState() { super.initState(); query.addListener(changed); if(widget.initialQuery.trim().isNotEmpty) query.text=widget.initialQuery.trim(); }
   void changed() {
     timer?.cancel();
     timer = Timer(const Duration(milliseconds: 250), search);
